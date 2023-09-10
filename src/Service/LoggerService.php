@@ -14,17 +14,14 @@ use function json_decode;
 class LoggerService implements ServiceInterface
 {
 
-
     /** @var AccountService */
     protected AccountService $accountService;
-
 
     /* @var LoggerRepositoryInterface */
     protected LoggerRepositoryInterface $logRepository;
 
     /* @var array */
     protected array $log;
-
 
     public function __construct(
         LoggerRepositoryInterface $logRepository,
@@ -35,6 +32,8 @@ class LoggerService implements ServiceInterface
         $this->log = $log;
     }
 
+    public function writeLog():void
+    {}
 
     /**
      * @param null
