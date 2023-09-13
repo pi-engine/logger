@@ -1,14 +1,10 @@
-CREATE TABLE `logger_log`
+CREATE TABLE `log`
 (
-    `id`          int(11) NOT NULL,
-    `user_id`     int(11) NOT NULL DEFAULT 0,
-    `item_id`     int(11) NOT NULL DEFAULT 0,
-    `action`      varchar(255) NOT NULL DEFAULT '',
-    `type`        varchar(255) NOT NULL DEFAULT '',
-    `event`       varchar(255) NOT NULL DEFAULT '',
-    `date`        varchar(255) NOT NULL DEFAULT '',
-    `time_create` int(11) NOT NULL DEFAULT 0,
-    `time_update` int(11) NOT NULL DEFAULT 0,
-    `time_delete` int(11) NOT NULL DEFAULT 0,
+    `id`           INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+    `timestamp`    DATETIME         NOT NULL,
+    `priority`     INT(10) UNSIGNED NOT NULL DEFAULT '0',
+    `priorityName` VARCHAR(255)     NOT NULL DEFAULT '',
+    `message`      VARCHAR(255)     NOT NULL DEFAULT '',
+    `extra_data`        JSON,
     PRIMARY KEY (`id`)
 );
