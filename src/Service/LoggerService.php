@@ -2,133 +2,77 @@
 
 namespace Logger\Service;
 
-use Club\Service\ScoreService;
-use Logger\Repository\LoggerRepositoryInterface;
-use mysql_xdevapi\Exception;
+use Laminas\Log\Logger;
+use Laminas\Log\Writer\MongoDB;
+use MongoDB\Driver\Manager;
 use User\Service\AccountService;
-use function explode;
-use function in_array;
-use function is_object;
-use function json_decode;
+use User\Service\UtilityService;
 
 class LoggerService implements ServiceInterface
 {
-
     /** @var AccountService */
     protected AccountService $accountService;
 
-    /* @var LoggerRepositoryInterface */
-    protected LoggerRepositoryInterface $logRepository;
+    /** @var UtilityService */
+    protected UtilityService $utilityService;
 
     /* @var array */
-    protected array $log;
+    protected array $config;
 
     public function __construct(
-        LoggerRepositoryInterface $logRepository,
-                                  $log
-    )
-    {
-        $this->logRepository = $logRepository;
-        $this->log = $log;
+        AccountService $accountService,
+        UtilityService $utilityService,
+        $config
+    ) {
+        $this->accountService = $accountService;
+        $this->utilityService = $utilityService;
+        $this->config         = $config;
     }
 
-    public function writeLog():void
-    {}
-
-    /**
-     * @param null
-     *
-     * @return null
-     */
-    public function writeTestLogger()
+    public function write(string $message, array $params = []): void
     {
-        $this->log['logger']->info('Informational message');
-        $this->log['logger']->emerg('Informational message');
-        $this->logRepository->addLog(["user_id" => 0]);
-    }
+        switch ($this->config['storage']) {
+            case 'mysql':
+                $this->writeToMysql($message, $params);
+                break;
 
+            case 'mongodb':
+                $this->writeToMongo($message, $params);
+                break;
 
-    public function canonizeLogger(object|array $log): array
-    {
-        if (empty($log)) {
-            return [];
-        }
+            case 'file':
+                $this->writeToFile($message, $params);
+                break;
 
-        if (is_object($log)) {
-            $log = [
-                'id' => $log->getId(),
-                'user_id' => $log->getUserId(),
-                'item_id' => $log->getItemId(),
-                'action' => $log->getAction(),
-                'event' => $log->getEvent(),
-                'type' => $log->getType(),
-                'date' => $log->getDate(),
-                'information' => $log->getInformation(),
-                'time_create' => $log->getTimeCreate(),
-                'time_update' => $log->getTimeUpdate(),
-                'time_delete' => $log->getTimeDelete(),
-            ];
-        } else {
-            $log = [
-                'id' => $log['id'],
-                'user_id' => $log['user_id'],
-                'item_id' => $log['item_id'],
-                'action' => $log['action'],
-                'event' => $log['event'],
-                'type' => $log['type'],
-                'date' => $log['date'],
-                'information' => $log['information'],
-                'time_create' => $log['time_create'],
-                'time_update' => $log['time_update'],
-                'time_delete' => $log['time_delete'],
-            ];
-        }
-        $log['information'] = json_decode($log['information']);
-        return $log;
-    }
-
-
-    public function addLogger(array $log)
-    {
-        $this->checkOverflow();
-
-        $information = $log['information'];
-        unset($log['information']);
-        $information = array_merge($information, $log);
-        $log['information'] = json_encode($information);
-        $log['date'] = date("l jS \of F Y h:i:s A");
-        $this->logRepository->addLog($log);
-    }
-
-    public function updateLogger(array $log)
-    {
-        $this->logRepository->updateLog($log);
-    }
-
-    public function getLog(array $log): array
-    {
-
-        $row = $this->logRepository->getLog(['id' => 1]);
-        return $this->canonizeLogger($row);
-    }
-
-    public function getAllLog(array $filter = []): array
-    {
-
-        $row = $this->logRepository->getLogsList();
-        $list = [];
-        foreach ($row as $log)
-            $list[] = $this->canonizeLogger($log);
-        return $list;
-    }
-
-    private function checkOverflow()
-    {
-        $count = $this->logRepository->getLogsCount();
-        if ($count >= $this->log['log_overflow_size']) {
-            $this->logRepository->emptyLogTable(['limit' => $this->log['log_trash_size']]);
+            case '':
+            case 'none':
+            default:
+                break;
         }
     }
 
+    public function writeToMongo(string $message, array $params): void
+    {
+        // Set writer
+        $manager = new Manager();
+        $writer  = new MongoDB(
+            $manager,
+            $this->config['mongodb']['database'],
+            $this->config['mongodb']['collection'],
+            $this->config['mongodb']['saveOptions']
+        );
 
+        // Save log
+        $logger  = new Logger();
+        $logger->addWriter($writer);
+        $logger->info($message, $params);
+    }
+
+    public function writeToMysql(string $message, array $params): void
+    {
+    }
+
+    public function writeToFile(string $message, array $params): void
+    {
+    }
 }

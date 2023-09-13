@@ -2,32 +2,23 @@
 
 namespace Logger\Factory\Service;
 
-use Logger\Repository\LoggerRepositoryInterface;
-use Logger\Service\LoggerService;
-use Interop\Container\ContainerInterface;
+use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use Logger\Service\LoggerService;
 use User\Service\AccountService;
+use User\Service\UtilityService;
 
 class LoggerServiceFactory implements FactoryInterface
 {
-    /**
-     * @param ContainerInterface $container
-     * @param string             $requestedName
-     * @param null|array         $options
-     *
-     * @return LoggerService
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null): LoggerService
     {
         $config = $container->get('config');
+        $config = $config['logger'] ?? [];
 
         return new LoggerService(
-            $container->get(LoggerRepositoryInterface::class), 
-            $config['log']
+            $container->get(AccountService::class),
+            $container->get(UtilityService::class),
+            $config
         );
     }
 }
