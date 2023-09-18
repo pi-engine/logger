@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'logger'       => [
+        // mysql, mongodb, file, disable
+        'storage' => 'mongodb',
+        'mongodb' => [
+            'database'    => 'XXX',
+            'collection'  => 'XXX',
+            'saveOptions' => [],
+        ],
+        'mysql'   => [
+            'driver'         => 'Pdo',
+            'dsn'            => 'mysql:dbname=XXX;host=localhost;charset=utf8',
+            'username'       => 'XXX',
+            'password'       => 'XXX',
+            'driver_options' => [
+                PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_general_ci',
+                PDO::ATTR_PERSISTENT         => false,
+            ],
+            'options'        => [],
+        ],
+        'file'    => [
+            'path'        => 'LOCAL_PATH',
+            'date_format' => 'Y-m-d',
+        ],
+    ]
+];

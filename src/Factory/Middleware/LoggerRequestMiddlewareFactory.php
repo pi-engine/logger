@@ -6,17 +6,17 @@ use Improvement\Middleware\ImprovementAddMiddleware;
 use Improvement\Service\ImprovementService;
 use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Logger\Middleware\LoggerMiddleware;
+use Logger\Middleware\LoggerRequestMiddleware;
 use Logger\Service\LoggerService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use User\Handler\ErrorHandler;
 
-class LoggerMiddlewareFactory implements FactoryInterface
+class LoggerRequestMiddlewareFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): LoggerMiddleware
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): LoggerRequestMiddleware
     {
-        return new LoggerMiddleware(
+        return new LoggerRequestMiddleware(
             $container->get(ResponseFactoryInterface::class),
             $container->get(StreamFactoryInterface::class),
             $container->get(ErrorHandler::class),

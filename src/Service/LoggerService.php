@@ -8,14 +8,15 @@ use Laminas\Log\Logger;
 use Laminas\Log\Writer\Db;
 use Laminas\Log\Writer\MongoDB;
 use Laminas\Log\Writer\Stream;
+use Logger\Repository\LogRepositoryInterface;
 use MongoDB\Driver\Manager;
 use User\Service\AccountService;
 use User\Service\UtilityService;
 
 class LoggerService implements ServiceInterface
 {
-    /** @var AccountService */
-    protected AccountService $accountService;
+    /** @var LogRepositoryInterface */
+    protected LogRepositoryInterface $logRepository;
 
     /** @var UtilityService */
     protected UtilityService $utilityService;
@@ -27,11 +28,11 @@ class LoggerService implements ServiceInterface
     protected int $priority = Logger::INFO;
 
     public function __construct(
-        AccountService $accountService,
+        LogRepositoryInterface $logRepository,
         UtilityService $utilityService,
         $config
     ) {
-        $this->accountService = $accountService;
+        $this->logRepository  = $logRepository;
         $this->utilityService = $utilityService;
         $this->config         = $config;
     }
@@ -72,7 +73,8 @@ class LoggerService implements ServiceInterface
             $this->setPriority($priority);
         }
 
-        switch ($this->config['storage']) {
+        $storage = $this->config['storage'] ?? 'disable';
+        switch ($storage) {
             case 'mysql':
                 $this->writeToMysql($message, $params);
                 break;
@@ -116,7 +118,7 @@ class LoggerService implements ServiceInterface
 
         // Set writer
         $db     = new Adapter($this->config['mysql']);
-        $writer = new Db($db, 'log');
+        $writer = new Db($db, 'log_inventory');
 
         // Save log
         $logger = new Logger();
@@ -138,5 +140,17 @@ class LoggerService implements ServiceInterface
         $logger = new Logger();
         $logger->addWriter($writer);
         $logger->log($this->priority, $message, $params);
+    }
+
+    public function addUserLog(string $state, array $params): void
+    {
+        $params = [
+            'user_id'     => $params['account']['id'],
+            'time_create' => time(),
+            'state'       => $state,
+            'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+        ];
+
+        $this->logRepository->addUser($params);
     }
 }

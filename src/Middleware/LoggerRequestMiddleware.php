@@ -11,7 +11,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use User\Handler\ErrorHandler;
 
-class LoggerMiddleware implements MiddlewareInterface
+class LoggerRequestMiddleware implements MiddlewareInterface
 {
     /** @var ResponseFactoryInterface */
     protected ResponseFactoryInterface $responseFactory;
@@ -24,6 +24,8 @@ class LoggerMiddleware implements MiddlewareInterface
 
     /** @var LoggerService */
     protected LoggerService $loggerService;
+
+    public string $messageFormat = 'Request on: %s-%s-%s-%s';
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
@@ -39,11 +41,17 @@ class LoggerMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        // Set message
-        $message = 'Request Log';
-
         // Get route information
-        $routeMatch = $request->getAttribute('Laminas\Router\RouteMatch');
+        $routeMatch  = $request->getAttribute('Laminas\Router\RouteMatch');
+        $routeParams = $routeMatch->getParams();
+
+        // Set message
+        $message = sprintf($this->messageFormat,
+            $routeParams['module'],
+            $routeParams['section'],
+            $routeParams['package'],
+            $routeParams['handler']
+        );
 
         // Set log params
         $params = [
@@ -59,7 +67,7 @@ class LoggerMiddleware implements MiddlewareInterface
             'cookies'         => $request->getCookieParams(),
             'attributes'      => $request->getAttributes(),
             'target'          => $request->getRequestTarget(),
-            'route'           => $routeMatch->getParams(),
+            'route'           => $routeParams,
         ];
 
         // Set log
