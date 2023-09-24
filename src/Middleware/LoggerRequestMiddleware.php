@@ -25,7 +25,7 @@ class LoggerRequestMiddleware implements MiddlewareInterface
     /** @var LoggerService */
     protected LoggerService $loggerService;
 
-    public string $messageFormat = 'Request on: %s-%s-%s-%s';
+    public string $messageFormat = '%s-%s-%s-%s';
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
@@ -41,12 +41,16 @@ class LoggerRequestMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        // Get attributes
+        $attributes = $request->getAttributes();
+
         // Get route information
         $routeMatch  = $request->getAttribute('Laminas\Router\RouteMatch');
         $routeParams = $routeMatch->getParams();
 
         // Set message
-        $message = sprintf($this->messageFormat,
+        $message = sprintf(
+            $this->messageFormat,
             $routeParams['module'],
             $routeParams['section'],
             $routeParams['package'],
@@ -55,6 +59,8 @@ class LoggerRequestMiddleware implements MiddlewareInterface
 
         // Set log params
         $params = [
+            'user_id'         => $attributes['account']['id'] ?? 0,
+            'user_company'    => $attributes['company_authorization']['company_id'] ?? 0,
             'method'          => $request->getMethod(),
             'uri'             => (string)$request->getUri(),
             'headers'         => $request->getHeaders(),

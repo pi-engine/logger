@@ -1,7 +1,7 @@
 CREATE TABLE `log_inventory`
 (
     `id`           INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-    `timestamp`    DATETIME         NOT NULL,
+    `timestamp`    VARCHAR(255)     NOT NULL DEFAULT '',
     `priority`     INT(10) UNSIGNED NOT NULL DEFAULT '0',
     `priorityName` VARCHAR(255)     NOT NULL DEFAULT '',
     `message`      VARCHAR(255)     NOT NULL DEFAULT '',
