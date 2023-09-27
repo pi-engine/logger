@@ -13,7 +13,7 @@ use RuntimeException;
 
 class LogRepository implements LogRepositoryInterface
 {
-    private string $tableInventory = 'log_inventory';
+    private string $tableLog = 'log_inventory';
 
     private string $tableUser = 'log_user';
 
