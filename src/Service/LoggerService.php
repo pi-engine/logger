@@ -10,7 +10,6 @@ use Laminas\Log\Writer\MongoDB;
 use Laminas\Log\Writer\Stream;
 use Logger\Repository\LogRepositoryInterface;
 use MongoDB\Driver\Manager;
-use User\Service\AccountService;
 use User\Service\UtilityService;
 
 class LoggerService implements ServiceInterface
@@ -26,6 +25,9 @@ class LoggerService implements ServiceInterface
 
     /* @var int */
     protected int $priority = Logger::INFO;
+
+    /* @var string */
+    protected string $tableLog = 'log_inventory';
 
     public function __construct(
         LogRepositoryInterface $logRepository,
@@ -69,10 +71,12 @@ class LoggerService implements ServiceInterface
 
     public function write(string $message, array $params = [], int $priority = null): void
     {
+        // Set priority
         if (is_numeric($priority)) {
             $this->setPriority($priority);
         }
 
+        // Save log
         $storage = $this->config['storage'] ?? 'disable';
         switch ($storage) {
             case 'mysql':
@@ -94,6 +98,21 @@ class LoggerService implements ServiceInterface
         }
     }
 
+    public function writeToMysql(string $message, array $params): void
+    {
+        // Set data
+        $data = json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        // Set writer
+        $db     = new Adapter($this->config['mysql']);
+        $writer = new Db($db, $this->tableLog);
+
+        // Save log
+        $logger = new Logger();
+        $logger->addWriter($writer);
+        $logger->log($this->priority, $message, ['data' => $data]);
+    }
+
     public function writeToMongo(string $message, array $params): void
     {
         // Set writer
@@ -109,21 +128,6 @@ class LoggerService implements ServiceInterface
         $logger = new Logger();
         $logger->addWriter($writer);
         $logger->log($this->priority, $message, $params);
-    }
-
-    public function writeToMysql(string $message, array $params): void
-    {
-        // Set data
-        $data = json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
-        // Set writer
-        $db     = new Adapter($this->config['mysql']);
-        $writer = new Db($db, 'log_inventory');
-
-        // Save log
-        $logger = new Logger();
-        $logger->addWriter($writer);
-        $logger->log($this->priority, $message, ['data' => $data]);
     }
 
     public function writeToFile(string $message, array $params): void
@@ -152,5 +156,43 @@ class LoggerService implements ServiceInterface
         ];
 
         $this->logRepository->addUser($params);
+    }
+
+    public function cleanUp(): void
+    {
+        $storage = $this->config['storage'] ?? 'disable';
+        switch ($storage) {
+            case 'mysql':
+                $this->cleanUpMysql();
+                break;
+
+            case 'mongodb':
+                $this->cleanUpMongo();
+                break;
+
+            case 'file':
+                $this->cleanUpFile();
+                break;
+
+            case '':
+            case 'disable':
+            default:
+                break;
+        }
+    }
+
+    // ToDo: Finish it
+    public function cleanUpMysql(): void
+    {
+    }
+
+    // ToDo: Finish it
+    public function cleanUpMongo(): void
+    {
+    }
+
+    // ToDo: Finish it
+    public function cleanUpFile(): void
+    {
     }
 }
