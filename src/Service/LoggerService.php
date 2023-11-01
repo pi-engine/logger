@@ -10,7 +10,7 @@ use Laminas\Log\Writer\MongoDB;
 use Laminas\Log\Writer\Stream;
 use Logger\Repository\LogRepositoryInterface;
 use MongoDB\Driver\Manager;
-use User\Service\UtilityService;
+use Logger\Service\UtilityService;
 
 class LoggerService implements ServiceInterface
 {
@@ -199,6 +199,7 @@ class LoggerService implements ServiceInterface
 
     public function readInventoryLog($params): array
     {
+        $inventoryObjectList = $this->logRepository->readInventoryLog($params);
         return $params;
     }
 }

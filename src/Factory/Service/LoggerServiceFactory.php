@@ -6,8 +6,7 @@ use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Logger\Repository\LogRepositoryInterface;
 use Logger\Service\LoggerService;
-use User\Service\AccountService;
-use User\Service\UtilityService;
+use Logger\Service\UtilityService;
 
 class LoggerServiceFactory implements FactoryInterface
 {
