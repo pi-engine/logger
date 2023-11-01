@@ -31,12 +31,13 @@ class LoggerService implements ServiceInterface
 
     public function __construct(
         LogRepositoryInterface $logRepository,
-        UtilityService $utilityService,
-        $config
-    ) {
-        $this->logRepository  = $logRepository;
+        UtilityService         $utilityService,
+                               $config
+    )
+    {
+        $this->logRepository = $logRepository;
         $this->utilityService = $utilityService;
-        $this->config         = $config;
+        $this->config = $config;
     }
 
     public function setPriority($priority): void
@@ -104,7 +105,7 @@ class LoggerService implements ServiceInterface
         $data = json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
         // Set writer
-        $db     = new Adapter($this->config['mysql']);
+        $db = new Adapter($this->config['mysql']);
         $writer = new Db($db, $this->tableLog);
 
         // Save log
@@ -117,7 +118,7 @@ class LoggerService implements ServiceInterface
     {
         // Set writer
         $manager = new Manager();
-        $writer  = new MongoDB(
+        $writer = new MongoDB(
             $manager,
             $this->config['mongodb']['database'],
             $this->config['mongodb']['collection'],
@@ -137,7 +138,7 @@ class LoggerService implements ServiceInterface
 
         // Set writer
         $formatter = new Json();
-        $writer    = new Stream($path);
+        $writer = new Stream($path);
         $writer->setFormatter($formatter);
 
         // Save log
@@ -149,9 +150,9 @@ class LoggerService implements ServiceInterface
     public function addUserLog(string $state, array $params): void
     {
         $params = [
-            'user_id'     => $params['account']['id'],
+            'user_id' => $params['account']['id'],
             'time_create' => time(),
-            'state'       => $state,
+            'state' => $state,
             'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
         ];
 
@@ -194,5 +195,10 @@ class LoggerService implements ServiceInterface
     // ToDo: Finish it
     public function cleanUpFile(): void
     {
+    }
+
+    public function readInventoryLog($params): array
+    {
+        return $params;
     }
 }
