@@ -94,14 +94,20 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['priority'])) {
             $where['priority'] = $params['priority'];
         }
-        if (!empty($params['priorityName'])) {
-            $where['priorityName'] = $params['priorityName'];
+        if (!empty($params['priority_name'])) {
+            $where['priorityName'] = $params['priority_name'];
         }
         if (!empty($params['message'])) {
             $where['message'] = $params['message'];
         }
-        if (!empty($params['extra_data'])) {
-            $where['extra_data LIKE ?'] = '%' . $params['extra_data'] . '%';
+//        if (!empty($params['extra_data'])) {
+//            $where['extra_data LIKE ?'] = '%' . $params['extra_data'] . '%';
+//        }
+        if (!empty($params['method'])) {
+            $where['extra_data LIKE ?'] = '%"method": "%'.$params['method'].'%';
+        }
+        if (!empty($params['name'])) {
+            $where['extra_data LIKE ?'] = '%"name": "%'.$params['name'].'%';
         }
         return $where;
     }

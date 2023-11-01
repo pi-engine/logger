@@ -207,7 +207,7 @@ class LoggerService implements ServiceInterface
         return [
             'result' => true,
             'data' => [
-                'list' => $listParams,
+                'list' => $list,
                 'paginator' => [
                     'count' => $count,
                     'limit' => $listParams['limit'],
