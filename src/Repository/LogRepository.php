@@ -75,6 +75,18 @@ class LogRepository implements LogRepositoryInterface
         if (isset($params['name']) && !empty($params['name'])) {
             $where['account.name like ?'] = '%' . $params['name'] . '%';
         }
+        if (isset($params['method']) && !empty($params['method'])) {
+            $where[' 1>0 AND log.information LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
+        }
+        if (isset($params['ip']) && !empty($params['ip'])) {
+            $where['2>1 AND log.information LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
+        }
+        if (isset($params['role']) && !empty($params['role'])) {
+            $where[' 3>2 AND log.information LIKE ?'] = '%"' . $params['role'] . '"%';
+        }
+        if (isset($params['identity']) && !empty($params['identity'])) {
+            $where[' 4>3 AND log.information LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
+        }
 
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableUser];
@@ -124,6 +136,19 @@ class LogRepository implements LogRepositoryInterface
         if (isset($params['name']) && !empty($params['name'])) {
             $where['account.name like ?'] = '%' . $params['name'] . '%';
         }
+        if (isset($params['method']) && !empty($params['method'])) {
+            $where[' 1>0 AND log.information LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
+        }
+        if (isset($params['ip']) && !empty($params['ip'])) {
+            $where['2>1 AND log.information LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
+        }
+        if (isset($params['role']) && !empty($params['role'])) {
+            $where[' 3>2 AND log.information LIKE ?'] = '%"' . $params['role'] . '"%';
+        }
+        if (isset($params['identity']) && !empty($params['identity'])) {
+            $where[' 4>3 AND log.information LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
+        }
+
 
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableUser];

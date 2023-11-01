@@ -250,6 +250,19 @@ class LoggerService implements ServiceInterface
         if (isset($params['name']) && !empty($params['name'])) {
             $listParams['name'] = $params['name'];
         }
+        if (isset($params['ip']) && !empty($params['ip'])) {
+            $listParams['ip'] = $params['ip'];
+        }
+        if (isset($params['method']) && !empty($params['method'])) {
+            $listParams['method'] = $params['method'];
+        }
+        if (isset($params['role']) && !empty($params['role'])) {
+            $listParams['role'] = $params['role'];
+        }
+        if (isset($params['identity']) && !empty($params['identity'])) {
+            $listParams['identity'] = $params['identity'];
+        }
+
 
         // Get list
         $list   = [];
