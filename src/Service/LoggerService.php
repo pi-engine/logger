@@ -10,7 +10,6 @@ use Laminas\Log\Writer\MongoDB;
 use Laminas\Log\Writer\Stream;
 use Logger\Repository\LogRepositoryInterface;
 use MongoDB\Driver\Manager;
-use Logger\Service\UtilityService;
 
 class LoggerService implements ServiceInterface
 {
@@ -31,13 +30,12 @@ class LoggerService implements ServiceInterface
 
     public function __construct(
         LogRepositoryInterface $logRepository,
-        UtilityService         $utilityService,
-                               $config
-    )
-    {
-        $this->logRepository = $logRepository;
+        UtilityService $utilityService,
+        $config
+    ) {
+        $this->logRepository  = $logRepository;
         $this->utilityService = $utilityService;
-        $this->config = $config;
+        $this->config         = $config;
     }
 
     public function setPriority($priority): void
@@ -105,7 +103,7 @@ class LoggerService implements ServiceInterface
         $data = json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
         // Set writer
-        $db = new Adapter($this->config['mysql']);
+        $db     = new Adapter($this->config['mysql']);
         $writer = new Db($db, $this->tableLog);
 
         // Save log
@@ -123,7 +121,7 @@ class LoggerService implements ServiceInterface
     {
         // Set writer
         $manager = new Manager();
-        $writer = new MongoDB(
+        $writer  = new MongoDB(
             $manager,
             $this->config['mongodb']['database'],
             $this->config['mongodb']['collection'],
@@ -143,25 +141,13 @@ class LoggerService implements ServiceInterface
 
         // Set writer
         $formatter = new Json();
-        $writer = new Stream($path);
+        $writer    = new Stream($path);
         $writer->setFormatter($formatter);
 
         // Save log
         $logger = new Logger();
         $logger->addWriter($writer);
         $logger->log($this->priority, $message, $params);
-    }
-
-    public function addUserLog(string $state, array $params): void
-    {
-        $params = [
-            'user_id' => $params['account']['id'],
-            'time_create' => time(),
-            'state' => $state,
-            'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
-        ];
-
-        $this->logRepository->addUser($params);
     }
 
     public function cleanUp(): void
@@ -207,20 +193,85 @@ class LoggerService implements ServiceInterface
         $listParams = $this->utilityService->paramsFraming($params);
 
         $inventoryObjectList = $this->logRepository->readInventoryLog($listParams);
-        $list =  $this->utilityService->inventoryLogListCanonize($inventoryObjectList);
-        $count = $this->logRepository->getInventoryLogCount($listParams);
+        $list                = $this->utilityService->inventoryLogListCanonize($inventoryObjectList);
+        $count               = $this->logRepository->getInventoryLogCount($listParams);
         return [
             'result' => true,
-            'data' => [
-                'list' => $list,
+            'data'   => [
+                'list'      => $list,
                 'paginator' => [
                     'count' => $count,
                     'limit' => $listParams['limit'],
-                    'page' => $listParams['page'],
+                    'page'  => $listParams['page'],
                 ],
-                'filters' => null,
+                'filters'   => null,
             ],
-            'error' => [],
+            'error'  => [],
+        ];
+    }
+
+    public function addUserLog(string $state, array $params): void
+    {
+        $params = [
+            'user_id'     => $params['account']['id'],
+            'time_create' => time(),
+            'state'       => $state,
+            'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+        ];
+
+        $this->logRepository->addUser($params);
+    }
+
+    public function getUserLog($params): array
+    {
+        $limit  = (int)($params['limit'] ?? 25);
+        $page   = (int)($params['page'] ?? 1);
+        $order  = $params['order'] ?? ['time_create DESC'];
+        $offset = ($page - 1) * $limit;
+
+        $listParams = [
+            'order'  => $order,
+            'offset' => $offset,
+            'limit'  => $limit,
+        ];
+
+        if (isset($params['user_id']) && !empty($params['user_id'])) {
+            $listParams['user_id'] = $params['user_id'];
+        }
+        if (isset($params['state']) && !empty($params['state'])) {
+            $listParams['state'] = $params['state'];
+        }
+        if (isset($params['mobile']) && !empty($params['mobile'])) {
+            $listParams['mobile'] = $params['mobile'];
+        }
+        if (isset($params['email']) && !empty($params['email'])) {
+            $listParams['email'] = $params['email'];
+        }
+        if (isset($params['name']) && !empty($params['name'])) {
+            $listParams['name'] = $params['name'];
+        }
+
+        // Get list
+        $list   = [];
+        $rowSet = $this->logRepository->getUserList($listParams);
+        foreach ($rowSet as $row) {
+            $list[] = $this->utilityService->canonizeUserLog($row);
+        }
+
+        // Get count
+        $count = $this->logRepository->getUserCount($listParams);
+
+        return [
+            'result' => true,
+            'data'   => [
+                'list'      => $list,
+                'paginator' => [
+                    'count' => $count,
+                    'limit' => $limit,
+                    'page'  => $page,
+                ],
+            ],
+            'error'  => [],
         ];
     }
 }
