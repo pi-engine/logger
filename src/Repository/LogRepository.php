@@ -224,6 +224,10 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['role'])) {
             $where[' 5>4 AND extra_data LIKE ?'] = '%"' . $params['role'] . '"%';
         }
+        if (!empty($params['identity'])) {
+            $where[' 6>5 AND extra_data LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
+        }
+
         return $where;
     }
 
