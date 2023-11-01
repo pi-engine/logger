@@ -185,7 +185,7 @@ class LogRepository implements LogRepositoryInterface
             $where['message'] = $params['message'];
         }
         if (!empty($params['method'])) {
-            $where[' 1>0 AND extra_data LIKE ?'] = '%"method": "%' . $params['method'] . '%';
+            $where[' 1>0 AND extra_data LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
         }
         if (!empty($params['email'])) {
             $where[' 2>1 AND extra_data LIKE ?'] = '%"email": "%' . $params['email'] . '%';
