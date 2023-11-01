@@ -4,6 +4,7 @@ namespace Logger\Repository;
 
 use Laminas\Db\Adapter\AdapterInterface;
 use Laminas\Db\Adapter\Driver\ResultInterface;
+use Laminas\Db\ResultSet\HydratingResultSet;
 use Laminas\Db\Sql\Insert;
 use Laminas\Db\Sql\Sql;
 use Laminas\Hydrator\HydratorInterface;
@@ -26,15 +27,16 @@ class LogRepository implements LogRepositoryInterface
     private HydratorInterface $hydrator;
 
     public function __construct(
-        AdapterInterface $db,
+        AdapterInterface  $db,
         HydratorInterface $hydrator,
-        Inventory $inventoryPrototype,
-        User $userPrototype,
-    ) {
-        $this->db                 = $db;
-        $this->hydrator           = $hydrator;
+        Inventory         $inventoryPrototype,
+        User              $userPrototype,
+    )
+    {
+        $this->db = $db;
+        $this->hydrator = $hydrator;
         $this->inventoryPrototype = $inventoryPrototype;
-        $this->userPrototype      = $userPrototype;
+        $this->userPrototype = $userPrototype;
     }
 
     public function addUser(array $params = []): void
@@ -42,9 +44,9 @@ class LogRepository implements LogRepositoryInterface
         $insert = new Insert($this->tableUser);
         $insert->values($params);
 
-        $sql       = new Sql($this->db);
+        $sql = new Sql($this->db);
         $statement = $sql->prepareStatementForSqlObject($insert);
-        $result    = $statement->execute();
+        $result = $statement->execute();
 
         if (!$result instanceof ResultInterface) {
             throw new RuntimeException(
@@ -52,5 +54,42 @@ class LogRepository implements LogRepositoryInterface
             );
         }
     }
+
+    public function readInventoryLog(array $params = []): HydratingResultSet|array
+    {
+        $where = [];
+        if (!empty($params['timestamp'])) {
+            $where['timestamp'] = $params['timestamp'];
+        }
+        if (!empty($params['priority'])) {
+            $where['priority'] = $params['priority'];
+        }
+        if (!empty($params['priorityName'])) {
+            $where['priorityName'] = $params['priorityName'];
+        }
+        if (!empty($params['message'])) {
+            $where['message'] = $params['message'];
+        }
+        if (!empty($params['extra_data'])) {
+            $where['extra_data LIKE ?'] = '%' . $params['extra_data'] . '%';
+        }
+
+        $order = ['timestamp ASC', 'id ASC'];
+
+        $sql = new Sql($this->db);
+        $select = $sql->select($this->tableLog)->where($where)->order($order);
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $result = $statement->execute();
+
+        if (!$result instanceof ResultInterface || !$result->isQueryResult()) {
+            return [];
+        }
+
+        $resultSet = new HydratingResultSet($this->hydrator, $this->inventoryPrototype);
+        $resultSet->initialize($result);
+
+        return $resultSet;
+    }
+
 
 }
