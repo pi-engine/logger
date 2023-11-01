@@ -213,7 +213,7 @@ class LoggerService implements ServiceInterface
     public function addUserLog(string $state, array $params): void
     {
         $params = [
-            'user_id'     => $params['account']['id'],
+            'user_id'     => (int)($params['account']['id']??0),
             'time_create' => time(),
             'state'       => $state,
             'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
