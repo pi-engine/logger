@@ -199,21 +199,7 @@ class LoggerService implements ServiceInterface
 
     public function readInventoryLog($params): array
     {
-        $limit = $params['limit'] ?? 50;
-        $page = $params['page'] ?? 1;
-        $order = $params['order'] ?? ['timestamp DESC', 'id DESC'];
-        $offset = ($page - 1) * $limit;
-
-        // Set params
-        $listParams = [
-            'order' => $order,
-            'offset' => $offset,
-            'limit' => $limit,
-        ];
-
-        if(isset($params['extra_data'])){
-            $listParams['extra_data'] = $params['extra_data'];
-        }
+        $listParams = $this->utilityService->paramsFraming($params);
 
         $inventoryObjectList = $this->logRepository->readInventoryLog($listParams);
         $list =  $this->utilityService->inventoryLogListCanonize($inventoryObjectList);
@@ -221,11 +207,11 @@ class LoggerService implements ServiceInterface
         return [
             'result' => true,
             'data' => [
-                'list' => $list,
+                'list' => $listParams,
                 'paginator' => [
                     'count' => $count,
-                    'limit' => $limit,
-                    'page' => $page,
+                    'limit' => $listParams['limit'],
+                    'page' => $listParams['page'],
                 ],
                 'filters' => null,
             ],
