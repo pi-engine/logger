@@ -25,39 +25,41 @@ class UtilityService implements ServiceInterface
 
         if (is_object($object)) {
             $object = [
-                'id'            => (int)$object->getId(),
-                'timestamp'     => $object->getTimestamp(),
-                'priority'      => $object->getPriority(),
+                'id' => (int)$object->getId(),
+                'timestamp' => $object->getTimestamp(),
+                'priority' => $object->getPriority(),
                 'priority_name' => $object->getPriorityName(),
-                'message'       => $object->getMessage(),
-                'extra_data'    => $object->getExtraData(),
+                'message' => $object->getMessage(),
+                'extra_data' => $object->getExtraData(),
             ];
         } else {
             $object = [
-                'id'            => (int)$object['id'],
-                'timestamp'     => $object['timestamp'],
-                'priority'      => $object['priority'],
+                'id' => (int)$object['id'],
+                'timestamp' => $object['timestamp'],
+                'priority' => $object['priority'],
                 'priority_name' => $object['priorityName'],
-                'message'       => $object['message'],
-                'extra_data'    => $object['extra_data'],
+                'message' => $object['message'],
+                'extra_data' => $object['extra_data'],
             ];
         }
         $object['extra_data'] = json_decode($object['extra_data'], true);
-        $extra                = $object['extra_data'];
-        $attributes           = $extra['attributes'];
-        $route                = $extra['route'];
-        $object['target']     = $extra['target'];
-        $object['section']    = $route['section'];
-        $object['module']     = $route['module'];
-        $object['package']    = $route['package'];
-        $object['handler']    = $route['handler'];
-        $object['method']     = $extra['method'];
-        $object['user_id']    = $extra['user_id'];
-        $object['name']       = $attributes['account']['name'];
-        $object['email']      = $attributes['account']['email'];
-        $object['identity']   = $attributes['account']['identity'];
-        $object['mobile']     = $attributes['account']['mobile'];
-        $object['roles']      = $attributes['roles'];
+        $extra = $object['extra_data'];
+        $attributes = $extra['attributes'];
+        $route = $extra['route'];
+        $serverParams = $extra['serverParams'];
+        $object['target'] = $extra['target'];
+        $object['section'] = $route['section'];
+        $object['module'] = $route['module'];
+        $object['package'] = $route['package'];
+        $object['handler'] = $route['handler'];
+        $object['method'] = $extra['method'];
+        $object['user_id'] = $extra['user_id'];
+        $object['name'] = $attributes['account']['name'];
+        $object['email'] = $attributes['account']['email'];
+        $object['identity'] = $attributes['account']['identity'];
+        $object['mobile'] = $attributes['account']['mobile'];
+        $object['roles'] = $attributes['roles'];
+        $object['ip'] = $serverParams['REMOTE_ADDR'];
 
         unset($object['extra_data']);
 
@@ -66,19 +68,22 @@ class UtilityService implements ServiceInterface
 
     public function paramsFraming($params): array
     {
-        $limit  = $params['limit'] ?? 50;
-        $page   = $params['page'] ?? 1;
-        $order  = $params['order'] ?? ['timestamp DESC', 'id DESC'];
+        $limit = (int)($params['limit'] ?? 25);
+        $page = (int)($params['page'] ?? 25);
+        $order = $params['order'] ?? ['timestamp DESC', 'id DESC'];
         $offset = ($page - 1) * $limit;
 
         // Set params
         $listParams = [
-            'order'  => $order,
+            'order' => $order,
             'offset' => $offset,
-            'limit'  => $limit,
+            'limit' => $limit,
+            'page' => $page,
         ];
 
         $paramNames = [
+            "ip",
+            "role",
             "name",
             "email",
             "module",
@@ -113,27 +118,27 @@ class UtilityService implements ServiceInterface
 
         if (is_object($object)) {
             $object = [
-                'id'            => (int)$object->getId(),
-                'user_id'       => $object->getUserId(),
-                'time_create'   => $object->getTimeCreate(),
-                'state'         => $object->getState(),
-                'information'   => $object->getInformation(),
+                'id' => (int)$object->getId(),
+                'user_id' => $object->getUserId(),
+                'time_create' => $object->getTimeCreate(),
+                'state' => $object->getState(),
+                'information' => $object->getInformation(),
                 'user_identity' => $object->getUserIdentity(),
-                'user_name'     => $object->getUserName(),
-                'user_email'    => $object->getUserEmail(),
-                'user_mobile'   => $object->getUserMobile(),
+                'user_name' => $object->getUserName(),
+                'user_email' => $object->getUserEmail(),
+                'user_mobile' => $object->getUserMobile(),
             ];
         } else {
             $object = [
-                'id'            => (int)$object['id'],
-                'user_id'       => $object['user_id'],
-                'time_create'   => $object['time_create'],
-                'state'         => $object['state'],
-                'information'   => $object['information'],
+                'id' => (int)$object['id'],
+                'user_id' => $object['user_id'],
+                'time_create' => $object['time_create'],
+                'state' => $object['state'],
+                'information' => $object['information'],
                 'user_identity' => $object['user_identity'],
-                'user_name'     => $object['user_name'],
-                'user_email'    => $object['user_email'],
-                'user_mobile'   => $object['user_mobile'],
+                'user_name' => $object['user_name'],
+                'user_email' => $object['user_email'],
+                'user_mobile' => $object['user_mobile'],
             ];
         }
 

@@ -184,14 +184,17 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['message'])) {
             $where['message'] = $params['message'];
         }
-//        if (!empty($params['extra_data'])) {
-//            $where['extra_data LIKE ?'] = '%' . $params['extra_data'] . '%';
-//        }
         if (!empty($params['method'])) {
             $where['extra_data LIKE ?'] = '%"method": "%' . $params['method'] . '%';
         }
         if (!empty($params['name'])) {
             $where['extra_data LIKE ?'] = '%"name": "%' . $params['name'] . '%';
+        }
+        if (!empty($params['ip'])) {
+            $where['extra_data LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
+        }
+        if (!empty($params['role'])) {
+            $where['extra_data LIKE ?'] = '%"' . $params['role'] . '"%';
         }
         return $where;
     }

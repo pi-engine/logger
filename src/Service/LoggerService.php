@@ -201,8 +201,8 @@ class LoggerService implements ServiceInterface
                 'list'      => $list,
                 'paginator' => [
                     'count' => $count,
-                    'limit' => $listParams['limit'],
-                    'page'  => $listParams['page'],
+                    'limit' => (int)$listParams['limit'],
+                    'page'  => (int)$listParams['page'],
                 ],
                 'filters'   => null,
             ],
