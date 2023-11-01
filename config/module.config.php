@@ -8,7 +8,6 @@ use Logger\Middleware\LoggerRequestMiddleware;
 use User\Middleware\AuthenticationMiddleware;
 use User\Middleware\AuthorizationMiddleware;
 use User\Middleware\SecurityMiddleware;
-use User\Middleware\RawDataValidationMiddleware;
 
 return [
     'service_manager' => [
@@ -16,11 +15,12 @@ return [
             Repository\LogRepositoryInterface::class => Repository\LogRepository::class,
         ],
         'factories' => [
-            Repository\LogRepository::class           => Factory\Repository\LogRepositoryFactory::class,
-            Service\LoggerService::class              => Factory\Service\LoggerServiceFactory::class,
-            Middleware\LoggerRequestMiddleware::class => Factory\Middleware\LoggerRequestMiddlewareFactory::class,
-            Handler\Admin\InstallerHandler::class => Factory\Handler\Admin\InstallerHandlerFactory::class,
+            Repository\LogRepository::class                     => Factory\Repository\LogRepositoryFactory::class,
+            Service\LoggerService::class                        => Factory\Service\LoggerServiceFactory::class,
+            Middleware\LoggerRequestMiddleware::class           => Factory\Middleware\LoggerRequestMiddlewareFactory::class,
+            Handler\Admin\InstallerHandler::class               => Factory\Handler\Admin\InstallerHandlerFactory::class,
             Handler\Admin\Inventory\InventoryReadHandler::class => Factory\Handler\Admin\Inventory\InventoryReadHandlerFactory::class,
+            Handler\Admin\User\UserReadHandler::class           => Factory\Handler\Admin\User\UserReadHandlerFactory::class,
         ],
     ],
 
@@ -75,8 +75,36 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             AuthorizationMiddleware::class,
-                                            //LoggerRequestMiddleware::class,
                                             Handler\Admin\Inventory\InventoryReadHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'user' => [
+                        'type' => Literal::class,
+                        'options' => [
+                            'route' => '/user',
+                            'defaults' => [],
+                        ],
+                        'child_routes' => [
+                            'read' => [
+                                'type' => Literal::class,
+                                'options' => [
+                                    'route' => '/read',
+                                    'defaults' => [
+                                        'module' => 'logger',
+                                        'section' => 'admin',
+                                        'package' => 'user',
+                                        'handler' => 'read',
+                                        'permission' => 'admin-logger-user-read',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            AuthorizationMiddleware::class,
+                                            Handler\Admin\User\UserReadHandler::class
                                         ),
                                     ],
                                 ],
