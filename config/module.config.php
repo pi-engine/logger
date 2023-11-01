@@ -75,7 +75,7 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             AuthorizationMiddleware::class,
-                                            LoggerRequestMiddleware::class,
+                                            //LoggerRequestMiddleware::class,
                                             Handler\Admin\Inventory\InventoryReadHandler::class
                                         ),
                                     ],

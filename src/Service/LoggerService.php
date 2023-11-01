@@ -211,6 +211,10 @@ class LoggerService implements ServiceInterface
             'limit' => $limit,
         ];
 
+        if(isset($params['extra_data'])){
+            $listParams['extra_data'] = $params['extra_data'];
+        }
+
         $inventoryObjectList = $this->logRepository->readInventoryLog($listParams);
         $list =  $this->utilityService->inventoryLogListCanonize($inventoryObjectList);
         $count = $this->logRepository->getInventoryLogCount($listParams);
