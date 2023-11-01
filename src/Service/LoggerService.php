@@ -111,7 +111,12 @@ class LoggerService implements ServiceInterface
         // Save log
         $logger = new Logger();
         $logger->addWriter($writer);
-        $logger->log($this->priority, $message, ['data' => $data]);
+        $logger->log(Logger::INFO, $message, [
+            'time_create' => time(),
+            'user_id'     => (int)$params['user_id'],
+            'company_id'  => (int)$params['company_id'],
+            'data'        => $data,
+        ]);
     }
 
     public function writeToMongo(string $message, array $params): void

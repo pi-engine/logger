@@ -60,7 +60,7 @@ class LoggerRequestMiddleware implements MiddlewareInterface
         // Set log params
         $params = [
             'user_id'         => $attributes['account']['id'] ?? 0,
-            'user_company'    => $attributes['company_authorization']['company_id'] ?? 0,
+            'company_id'    => $attributes['company_authorization']['company_id'] ?? 0,
             'method'          => $request->getMethod(),
             'uri'             => (string)$request->getUri(),
             'headers'         => $request->getHeaders(),
