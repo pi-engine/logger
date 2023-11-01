@@ -143,7 +143,11 @@ class UtilityService implements ServiceInterface
             ];
         }
 
-        $object['information'] = json_decode($object['information'], true);
+        $information = json_decode($object['information'], true);
+        $information['params']['method'] = $information['params']['serverParams']['REQUEST_METHOD'];
+        $information['params']['ip'] = $information['params']['serverParams']['REMOTE_ADDR'];
+        unset($information['params']['serverParams']);
+        $object['information'] = $information;
         //$object['time_create'] = $this->utilityService->date($object['time_create']);
 
         return $object;
