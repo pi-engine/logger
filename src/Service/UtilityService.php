@@ -9,12 +9,17 @@ use Logger\Service\ServiceInterface;
 
 class UtilityService implements ServiceInterface
 {
-    /* @var array */
-    protected array $config;
-
-    public function __construct($config)
+    public function __construct( )
     {
-        $this->config = $config;
+    }
+
+    public function inventoryLogListCanonize($objectList): array
+    {
+        $list = [];
+        foreach ($objectList as $object) {
+            $list[] = $this->inventoryLogCanonize($object);
+        }
+        return array_values($list);
     }
 
     public function inventoryLogCanonize($object): array
