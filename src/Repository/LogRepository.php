@@ -185,16 +185,19 @@ class LogRepository implements LogRepositoryInterface
             $where['message'] = $params['message'];
         }
         if (!empty($params['method'])) {
-            $where['extra_data LIKE ?'] = '%"method": "%' . $params['method'] . '%';
+            $where[' 1>0 AND extra_data LIKE ?'] = '%"method": "%' . $params['method'] . '%';
+        }
+        if (!empty($params['email'])) {
+            $where[' 2>1 AND extra_data LIKE ?'] = '%"email": "%' . $params['email'] . '%';
         }
         if (!empty($params['name'])) {
-            $where['extra_data LIKE ?'] = '%"name": "%' . $params['name'] . '%';
+            $where[' 3>2 AND extra_data LIKE ?'] = '%"name": "%' . $params['name'] . '%';
         }
         if (!empty($params['ip'])) {
-            $where['extra_data LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
+            $where['4>3 AND extra_data LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
         }
         if (!empty($params['role'])) {
-            $where['extra_data LIKE ?'] = '%"' . $params['role'] . '"%';
+            $where[' 5>4 AND extra_data LIKE ?'] = '%"' . $params['role'] . '"%';
         }
         return $where;
     }
