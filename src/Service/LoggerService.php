@@ -199,7 +199,33 @@ class LoggerService implements ServiceInterface
 
     public function readInventoryLog($params): array
     {
-        $inventoryObjectList = $this->logRepository->readInventoryLog($params);
-        return $params;
+        $limit = $params['limit'] ?? 50;
+        $page = $params['page'] ?? 1;
+        $order = $params['order'] ?? ['timestamp DESC', 'id DESC'];
+        $offset = ($page - 1) * $limit;
+
+        // Set params
+        $listParams = [
+            'order' => $order,
+            'offset' => $offset,
+            'limit' => $limit,
+        ];
+
+        $inventoryObjectList = $this->logRepository->readInventoryLog($listParams);
+        $list =  $this->utilityService->inventoryLogListCanonize($inventoryObjectList);
+        $count = $this->logRepository->getInventoryLogCount($listParams);
+        return [
+            'result' => true,
+            'data' => [
+                'list' => $list,
+                'paginator' => [
+                    'count' => $count,
+                    'limit' => $limit,
+                    'page' => $page,
+                ],
+                'filters' => null,
+            ],
+            'error' => [],
+        ];
     }
 }

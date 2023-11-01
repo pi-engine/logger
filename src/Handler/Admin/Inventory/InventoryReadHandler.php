@@ -49,12 +49,6 @@ class InventoryReadHandler implements RequestHandlerInterface
         $requestBody = json_decode($rawData, true);
 
         $result = $this->loggerService->readInventoryLog($requestBody);
-
-        $result = [
-            'result' => true,
-            'data' =>  $result,
-            'error' => [],
-        ];
         return new JsonResponse($result);
 
 

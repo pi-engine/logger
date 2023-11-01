@@ -6,6 +6,7 @@ use Laminas\Db\Adapter\AdapterInterface;
 use Laminas\Db\Adapter\Driver\ResultInterface;
 use Laminas\Db\ResultSet\HydratingResultSet;
 use Laminas\Db\Sql\Insert;
+use Laminas\Db\Sql\Predicate\Expression;
 use Laminas\Db\Sql\Sql;
 use Laminas\Hydrator\HydratorInterface;
 use Logger\Model\Inventory;
@@ -57,6 +58,35 @@ class LogRepository implements LogRepositoryInterface
 
     public function readInventoryLog(array $params = []): HydratingResultSet|array
     {
+        $where = $this->createConditional($params);
+        $order = $params['order'] ?? ['timestamp DESC', 'id DESC'];
+        $sql = new Sql($this->db);
+        $select = $sql->select($this->tableLog)->where($where)->order($order)->offset($params['offset'])->limit($params['limit']);
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $result = $statement->execute();
+
+        if (!$result instanceof ResultInterface || !$result->isQueryResult()) {
+            return [];
+        }
+
+        $resultSet = new HydratingResultSet($this->hydrator, $this->inventoryPrototype);
+        $resultSet->initialize($result);
+        return $resultSet;
+    }
+
+    public function getInventoryLogCount(array $params = []): int
+    {
+        $columns = ['count' => new Expression('count(*)')];
+        $where = $this->createConditional($params);
+        $sql = new Sql($this->db);
+        $select = $sql->select($this->tableLog)->columns($columns)->where($where);
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $row = $statement->execute()->current();
+        return (int)$row['count'];
+    }
+
+    private function createConditional(array $params): array
+    {
         $where = [];
         if (!empty($params['timestamp'])) {
             $where['timestamp'] = $params['timestamp'];
@@ -73,23 +103,7 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['extra_data'])) {
             $where['extra_data LIKE ?'] = '%' . $params['extra_data'] . '%';
         }
-
-        $order = ['timestamp ASC', 'id ASC'];
-
-        $sql = new Sql($this->db);
-        $select = $sql->select($this->tableLog)->where($where)->order($order);
-        $statement = $sql->prepareStatementForSqlObject($select);
-        $result = $statement->execute();
-
-        if (!$result instanceof ResultInterface || !$result->isQueryResult()) {
-            return [];
-        }
-
-        $resultSet = new HydratingResultSet($this->hydrator, $this->inventoryPrototype);
-        $resultSet->initialize($result);
-
-        return $resultSet;
+        return $where;
     }
-
 
 }
