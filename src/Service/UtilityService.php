@@ -83,6 +83,7 @@ class UtilityService implements ServiceInterface
 
         $paramNames = [
             "ip",
+            "order",
             "identity",
             "role",
             "name",
