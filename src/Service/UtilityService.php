@@ -90,8 +90,8 @@ class UtilityService implements ServiceInterface
             "module",
             "section",
             "identity",
-            "from_date",
-            "to_date",
+            "data_from",
+            "data_to",
             "priority_name",
             "method",
             "user_id",
@@ -107,6 +107,22 @@ class UtilityService implements ServiceInterface
 
         if (isset($nonEmptyParams['user_id'])) {
             $nonEmptyParams['user_id'] = explode(',', $nonEmptyParams['user_id']);
+        }
+
+        if (isset($nonEmptyParams['data_from']) && !empty($nonEmptyParams['data_from'])) {
+            $nonEmptyParams['data_from'] = strtotime(
+                ($params['data_from']) != null
+                    ? sprintf('%s 00:00:00', $params['data_from'])
+                    : sprintf('%s 00:00:00', date('Y-m-d', strtotime('-1 month')))
+            );
+        }
+
+        if (isset($nonEmptyParams['data_to']) && !empty($nonEmptyParams['data_to'])) {
+            $nonEmptyParams['data_to'] = strtotime(
+                ($nonEmptyParams['data_to']) != null
+                    ? sprintf('%s 00:00:00', $params['data_to'])
+                    : sprintf('%s 23:59:59', date('Y-m-d'))
+            );
         }
         return array_merge($listParams, $nonEmptyParams);
     }

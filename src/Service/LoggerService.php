@@ -265,7 +265,21 @@ class LoggerService implements ServiceInterface
         if (isset($params['user_id']) && !empty($params['user_id'])) {
             $listParams['user_id'] = explode(',', $params['user_id']);
         }
+        if (isset($params['data_from']) && !empty($params['data_from'])) {
+            $listParams['data_from'] = strtotime(
+                ($params['data_from']) != null
+                    ? sprintf('%s 00:00:00', $params['data_from'])
+                    : sprintf('%s 00:00:00', date('Y-m-d', strtotime('-1 month')))
+            );
+        }
 
+        if (isset($params['data_to']) && !empty($params['data_to'])) {
+            $listParams['data_to'] = strtotime(
+                ($params['data_to']) != null
+                    ? sprintf('%s 00:00:00', $params['data_to'])
+                    : sprintf('%s 23:59:59', date('Y-m-d'))
+            );
+        }
 
         // Get list
         $list   = [];

@@ -88,6 +88,12 @@ class LogRepository implements LogRepositoryInterface
         if (isset($params['identity']) && !empty($params['identity'])) {
             $where[' 4>3 AND log.information LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
         }
+        if (!empty($params['data_from'])) {
+            $where['time_create >= ?'] = $params['data_from'];
+        }
+        if (!empty($params['data_to'])) {
+            $where['time_create <= ?'] = $params['data_to'];
+        }
 
         $sql = new Sql($this->db);
         $from = ['log' => $this->tableUser];
@@ -149,7 +155,12 @@ class LogRepository implements LogRepositoryInterface
         if (isset($params['identity']) && !empty($params['identity'])) {
             $where[' 4>3 AND log.information LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
         }
-
+        if (!empty($params['data_from'])) {
+            $where['time_create >= ?'] = $params['data_from'];
+        }
+        if (!empty($params['data_to'])) {
+            $where['time_create <= ?'] = $params['data_to'];
+        }
 
         $sql = new Sql($this->db);
         $from = ['log' => $this->tableUser];
@@ -173,6 +184,13 @@ class LogRepository implements LogRepositoryInterface
         if (isset($params['user_id']) & !empty($params['user_id'])) {
             $where['extra_user_id'] = $params['user_id'];
         }
+        if (!empty($params['data_from'])) {
+            $where['extra_time_create >= ?'] = $params['data_from'];
+        }
+        if (!empty($params['data_to'])) {
+            $where['extra_time_create <= ?'] = $params['data_to'];
+        }
+
         $order = $params['order'] ?? ['timestamp DESC', 'id DESC'];
         $sql = new Sql($this->db);
         $select = $sql->select($this->tableLog)->where($where)->order($order)->offset($params['offset'])->limit($params['limit']);
@@ -195,6 +213,12 @@ class LogRepository implements LogRepositoryInterface
         ///The name of this parameter is different in the database [log_user , log_inventory] and should not be in the createCondition
         if (isset($params['user_id']) & !empty($params['user_id'])) {
             $where['extra_user_id'] = $params['user_id'];
+        }
+        if (!empty($params['data_from'])) {
+            $where['extra_time_create >= ?'] = $params['data_from'];
+        }
+        if (!empty($params['data_to'])) {
+            $where['extra_time_create <= ?'] = $params['data_to'];
         }
         $sql = new Sql($this->db);
         $select = $sql->select($this->tableLog)->columns($columns)->where($where);
