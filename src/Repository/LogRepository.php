@@ -30,15 +30,16 @@ class LogRepository implements LogRepositoryInterface
     private HydratorInterface $hydrator;
 
     public function __construct(
-        AdapterInterface $db,
+        AdapterInterface  $db,
         HydratorInterface $hydrator,
-        Inventory $inventoryPrototype,
-        User $userPrototype,
-    ) {
-        $this->db                 = $db;
-        $this->hydrator           = $hydrator;
+        Inventory         $inventoryPrototype,
+        User              $userPrototype,
+    )
+    {
+        $this->db = $db;
+        $this->hydrator = $hydrator;
         $this->inventoryPrototype = $inventoryPrototype;
-        $this->userPrototype      = $userPrototype;
+        $this->userPrototype = $userPrototype;
     }
 
     public function addUser(array $params = []): void
@@ -46,9 +47,9 @@ class LogRepository implements LogRepositoryInterface
         $insert = new Insert($this->tableUser);
         $insert->values($params);
 
-        $sql       = new Sql($this->db);
+        $sql = new Sql($this->db);
         $statement = $sql->prepareStatementForSqlObject($insert);
-        $result    = $statement->execute();
+        $result = $statement->execute();
 
         if (!$result instanceof ResultInterface) {
             throw new RuntimeException(
@@ -88,23 +89,23 @@ class LogRepository implements LogRepositoryInterface
             $where[' 4>3 AND log.information LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
         }
 
-        $sql    = new Sql($this->db);
-        $from   = ['log' => $this->tableUser];
+        $sql = new Sql($this->db);
+        $from = ['log' => $this->tableUser];
         $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
             [
                 'user_identity' => 'identity',
-                'user_name'     => 'name',
-                'user_email'    => 'email',
-                'user_mobile'   => 'mobile',
+                'user_name' => 'name',
+                'user_email' => 'email',
+                'user_mobile' => 'mobile',
             ],
             $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
         );
 
         $statement = $sql->prepareStatementForSqlObject($select);
-        $result    = $statement->execute();
+        $result = $statement->execute();
 
         if (!$result instanceof ResultInterface || !$result->isQueryResult()) {
             return [];
@@ -120,7 +121,7 @@ class LogRepository implements LogRepositoryInterface
     {
         // Set where
         $columns = ['count' => new Expression('count(*)')];
-        $where   = [];
+        $where = [];
         if (isset($params['user_id']) && !empty($params['user_id'])) {
             $where['log.user_id'] = $params['user_id'];
         }
@@ -150,8 +151,8 @@ class LogRepository implements LogRepositoryInterface
         }
 
 
-        $sql    = new Sql($this->db);
-        $from   = ['log' => $this->tableUser];
+        $sql = new Sql($this->db);
+        $from = ['log' => $this->tableUser];
         $select = $sql->select()->from($from)->columns($columns)->where($where);
         $select->join(
             ['account' => $this->tableAccount],
@@ -160,19 +161,23 @@ class LogRepository implements LogRepositoryInterface
             $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
         );
         $statement = $sql->prepareStatementForSqlObject($select);
-        $row       = $statement->execute()->current();
+        $row = $statement->execute()->current();
 
         return (int)$row['count'];
     }
 
     public function readInventoryLog(array $params = []): HydratingResultSet|array
     {
-        $where     = $this->createConditional($params);
-        $order     = $params['order'] ?? ['timestamp DESC', 'id DESC'];
-        $sql       = new Sql($this->db);
-        $select    = $sql->select($this->tableLog)->where($where)->order($order)->offset($params['offset'])->limit($params['limit']);
+        $where = $this->createConditional($params);
+        ///The name of this parameter is different in the database [log_user , log_inventory] and should not be in the createCondition
+        if (isset($params['user_id']) & !empty($params['user_id'])) {
+            $where['extra_user_id'] = $params['user_id'];
+        }
+        $order = $params['order'] ?? ['timestamp DESC', 'id DESC'];
+        $sql = new Sql($this->db);
+        $select = $sql->select($this->tableLog)->where($where)->order($order)->offset($params['offset'])->limit($params['limit']);
         $statement = $sql->prepareStatementForSqlObject($select);
-        $result    = $statement->execute();
+        $result = $statement->execute();
 
         if (!$result instanceof ResultInterface || !$result->isQueryResult()) {
             return [];
@@ -185,12 +190,16 @@ class LogRepository implements LogRepositoryInterface
 
     public function getInventoryLogCount(array $params = []): int
     {
-        $columns   = ['count' => new Expression('count(*)')];
-        $where     = $this->createConditional($params);
-        $sql       = new Sql($this->db);
-        $select    = $sql->select($this->tableLog)->columns($columns)->where($where);
+        $columns = ['count' => new Expression('count(*)')];
+        $where = $this->createConditional($params);
+        ///The name of this parameter is different in the database [log_user , log_inventory] and should not be in the createCondition
+        if (isset($params['user_id']) & !empty($params['user_id'])) {
+            $where['extra_user_id'] = $params['user_id'];
+        }
+        $sql = new Sql($this->db);
+        $select = $sql->select($this->tableLog)->columns($columns)->where($where);
         $statement = $sql->prepareStatementForSqlObject($select);
-        $row       = $statement->execute()->current();
+        $row = $statement->execute()->current();
         return (int)$row['count'];
     }
 
