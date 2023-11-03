@@ -11,7 +11,7 @@ class UtilityService implements ServiceInterface
 
     public function __construct($config)
     {
-        $this->config = [$config];
+        $this->config = $config;
     }
     public function inventoryLogListCanonize($objectList): array
     {
