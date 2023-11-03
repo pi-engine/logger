@@ -2,12 +2,17 @@
 
 namespace Logger\Service;
 
+use IntlDateFormatter;
+
 class UtilityService implements ServiceInterface
 {
-    public function __construct()
-    {
-    }
+    /* @var array */
+    protected array $config;
 
+    public function __construct($config)
+    {
+        $this->config = [$config];
+    }
     public function inventoryLogListCanonize($objectList): array
     {
         $list = [];
@@ -31,6 +36,8 @@ class UtilityService implements ServiceInterface
                 'priority_name' => $object->getPriorityName(),
                 'message' => $object->getMessage(),
                 'extra_data' => $object->getExtraData(),
+                'extra_time_create' => $object->getExtraTimeCreate(),
+                'extra_user_id' => $object->getExtraUserId(),
             ];
         } else {
             $object = [
@@ -40,6 +47,8 @@ class UtilityService implements ServiceInterface
                 'priority_name' => $object['priorityName'],
                 'message' => $object['message'],
                 'extra_data' => $object['extra_data'],
+                'extra_time_create' => $object['extra_time_create'],
+                'extra_user_id' => $object['extra_user_id'],
             ];
         }
         $object['extra_data'] = json_decode($object['extra_data'], true);
@@ -60,8 +69,10 @@ class UtilityService implements ServiceInterface
         $object['mobile'] = $attributes['account']['mobile'];
         $object['roles'] = $attributes['roles'];
         $object['ip'] = $serverParams['REMOTE_ADDR'];
-
         unset($object['extra_data']);
+        $object['time_create_view'] = $this->date($object['extra_time_create']);
+        $object['roles_view'] = [];
+
 
         return $object;
     }
@@ -165,9 +176,32 @@ class UtilityService implements ServiceInterface
         $information['params']['ip'] = $information['params']['serverParams']['REMOTE_ADDR'];
         unset($information['params']['serverParams']);
         $object['information'] = $information;
-        //$object['time_create'] = $this->utilityService->date($object['time_create']);
+        $object['time_create_view'] = $this->date($object['time_create']);
+        $object['roles_view'] = [];
 
         return $object;
     }
+
+
+    public function date(string $date = '', array $params = []): string
+    {
+        $date = empty($date) ? time() : $date;
+
+        if (!class_exists('IntlDateFormatter')) {
+            return date('Y-m-d H:i:s', $date);
+        }
+
+        // Set params
+        $local    = $params['local'] ?? $this->config['date_local'];
+        $datetype = $params['datetype'] ?? $this->config['date_type'];
+        $timetype = $params['timetype'] ?? $this->config['time_type'];
+        $timezone = $params['timezone'] ?? $this->config['timezone'];
+        $calendar = $params['calendar'] ?? $this->config['date_calendar'];
+        $pattern  = $params['pattern'] ?? $this->config['date_pattern'];
+
+        $formatter = new IntlDateFormatter($local, $datetype, $timetype, $timezone, $calendar, $pattern);
+        return $formatter->format($date);
+    }
+
 
 }
