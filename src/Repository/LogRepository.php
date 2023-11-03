@@ -234,13 +234,13 @@ class LogRepository implements LogRepositoryInterface
             $where['timestamp'] = $params['timestamp'];
         }
         if (!empty($params['priority'])) {
-            $where['priority'] = $params['priority'];
+            $where['priority like ?'] = '%' . $params['priority'] . '%';
         }
         if (!empty($params['priority_name'])) {
-            $where['priorityName'] = $params['priority_name'];
+            $where['priority_name like ?'] = '%' . $params['priority_name'] . '%';
         }
         if (!empty($params['message'])) {
-            $where['message'] = $params['message'];
+            $where['message like ?'] = '%' . $params['message'] . '%';
         }
         if (!empty($params['method'])) {
             $where[' 1>0 AND extra_data LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
