@@ -237,7 +237,7 @@ class LogRepository implements LogRepositoryInterface
             $where['priority like ?'] = '%' . $params['priority'] . '%';
         }
         if (!empty($params['priority_name'])) {
-            $where['priority_name like ?'] = '%' . $params['priority_name'] . '%';
+            $where['priorityName like ?'] = '%' . $params['priority_name'] . '%';
         }
         if (!empty($params['message'])) {
             $where['message like ?'] = '%' . $params['message'] . '%';
