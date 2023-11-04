@@ -214,6 +214,7 @@ class LoggerService implements ServiceInterface
     {
         $params = [
             'user_id'     => (int)($params['account']['id']??0),
+            'operator_id' => (int)(isset($params['operator'])?!empty($params['operator'])?$params['operator']['id']??0:0:0),
             'time_create' => time(),
             'state'       => $state,
             'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),

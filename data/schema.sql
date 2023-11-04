@@ -16,6 +16,7 @@ CREATE TABLE `log_user`
 (
     `id`          INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id`     INT(10) UNSIGNED NOT NULL DEFAULT '0',
+    `operator_id` INT(10) UNSIGNED NOT NULL DEFAULT '0',
     `time_create` INT(10) UNSIGNED NOT NULL DEFAULT '0',
     `state`       VARCHAR(32)      NOT NULL DEFAULT '',
     `information` JSON,

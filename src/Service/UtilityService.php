@@ -149,6 +149,7 @@ class UtilityService implements ServiceInterface
             $object = [
                 'id' => (int)$object->getId(),
                 'user_id' => $object->getUserId(),
+                'operator_id' => $object->getOperatorId(),
                 'time_create' => $object->getTimeCreate(),
                 'state' => $object->getState(),
                 'information' => $object->getInformation(),
@@ -161,6 +162,7 @@ class UtilityService implements ServiceInterface
             $object = [
                 'id' => (int)$object['id'],
                 'user_id' => $object['user_id'],
+                'operator_id' => $object['operator_id'],
                 'time_create' => $object['time_create'],
                 'state' => $object['state'],
                 'information' => $object['information'],

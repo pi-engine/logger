@@ -6,6 +6,7 @@ class User
 {
     private mixed  $id;
     private int    $user_id;
+    private int    $operator_id;
     private int    $time_create;
     private string $state;
     private string $information;
@@ -16,6 +17,7 @@ class User
 
     public function __construct(
         $user_id,
+        $operator_id,
         $time_create,
         $state,
         $information,
@@ -26,6 +28,7 @@ class User
         $id = null
     ) {
         $this->user_id     = $user_id;
+        $this->operator_id     = $operator_id;
         $this->time_create = $time_create;
         $this->state       = $state;
         $this->information = $information;
@@ -45,6 +48,24 @@ class User
     {
         return $this->user_id;
     }
+
+    /**
+     * @return int
+     */
+    public function getOperatorId(): int
+    {
+        return $this->operator_id;
+    }
+
+    /**
+     * @param int $operator_id
+     */
+    public function setOperatorId(int $operator_id): void
+    {
+        $this->operator_id = $operator_id;
+    }
+
+
 
     public function getTimeCreate(): int
     {
