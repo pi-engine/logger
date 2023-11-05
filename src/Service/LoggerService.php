@@ -100,7 +100,7 @@ class LoggerService implements ServiceInterface
     public function writeToMysql(string $message, array $params): void
     {
         // Set data
-        $data = json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $data = json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK);
 
         // Set writer
         $db     = new Adapter($this->config['mysql']);
@@ -217,7 +217,7 @@ class LoggerService implements ServiceInterface
             'operator_id' => (int)(isset($params['operator'])?!empty($params['operator'])?$params['operator']['id']??0:0:0),
             'time_create' => time(),
             'state'       => $state,
-            'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK),
         ];
 
         $this->logRepository->addUser($params);
