@@ -80,7 +80,7 @@ class UtilityService implements ServiceInterface
     public function paramsFraming($params): array
     {
         $limit = (int)($params['limit'] ?? 25);
-        $page = (int)($params['page'] ?? 25);
+        $page = (int)($params['page'] ?? 1);
         $order = $params['order'] ?? ['timestamp DESC', 'id DESC'];
         $offset = ($page - 1) * $limit;
 
@@ -117,7 +117,7 @@ class UtilityService implements ServiceInterface
             }
         }
 
-        if (isset($nonEmptyParams['user_id'])) {
+        if (isset($nonEmptyParams['user_id'])&&!empty((int)$nonEmptyParams['user_id'])) {
             $nonEmptyParams['user_id'] = explode(',', $nonEmptyParams['user_id']);
         }
 

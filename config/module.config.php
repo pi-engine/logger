@@ -48,7 +48,7 @@ return [
                                 'middleware' => new PipeSpec(
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
-                                    LoggerRequestMiddleware::class,
+//                                    LoggerRequestMiddleware::class,
                                     Handler\Admin\InstallerHandler::class
                                 ),
                             ],
