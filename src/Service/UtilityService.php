@@ -97,6 +97,7 @@ class UtilityService implements ServiceInterface
             "order",
             "identity",
             "role",
+            "target",
             "name",
             "email",
             "module",

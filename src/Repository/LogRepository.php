@@ -260,6 +260,9 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['identity'])) {
             $where[' 6>5 AND extra_data LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
         }
+        if (!empty($params['target'])) {
+            $where[' 7>6 AND extra_data LIKE ?'] = '%"target": "' . $params['target'] . '"%';
+        }
 
         return $where;
     }
