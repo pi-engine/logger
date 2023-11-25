@@ -13,6 +13,7 @@ class UtilityService implements ServiceInterface
     {
         $this->config = $config;
     }
+
     public function inventoryLogListCanonize($objectList): array
     {
         $list = [];
@@ -30,66 +31,66 @@ class UtilityService implements ServiceInterface
 
         if (is_object($object)) {
             $object = [
-                'id' => (int)$object->getId(),
-                'timestamp' => $object->getTimestamp(),
-                'priority' => $object->getPriority(),
-                'priority_name' => $object->getPriorityName(),
-                'message' => $object->getMessage(),
-                'extra_data' => $object->getExtraData(),
+                'id'                => (int)$object->getId(),
+                'timestamp'         => $object->getTimestamp(),
+                'priority'          => $object->getPriority(),
+                'priority_name'     => $object->getPriorityName(),
+                'message'           => $object->getMessage(),
+                'extra_data'        => $object->getExtraData(),
                 'extra_time_create' => $object->getExtraTimeCreate(),
-                'extra_user_id' => $object->getExtraUserId(),
+                'extra_user_id'     => $object->getExtraUserId(),
             ];
         } else {
             $object = [
-                'id' => (int)$object['id'],
-                'timestamp' => $object['timestamp'],
-                'priority' => $object['priority'],
-                'priority_name' => $object['priorityName'],
-                'message' => $object['message'],
-                'extra_data' => $object['extra_data'],
+                'id'                => (int)$object['id'],
+                'timestamp'         => $object['timestamp'],
+                'priority'          => $object['priority'],
+                'priority_name'     => $object['priorityName'],
+                'message'           => $object['message'],
+                'extra_data'        => $object['extra_data'],
                 'extra_time_create' => $object['extra_time_create'],
-                'extra_user_id' => $object['extra_user_id'],
+                'extra_user_id'     => $object['extra_user_id'],
             ];
         }
         $object['extra_data'] = json_decode($object['extra_data'], true);
-        $extra = $object['extra_data'];
-        $attributes = $extra['attributes'];
-        $route = $extra['route'];
-        $serverParams = $extra['serverParams'];
-        $object['target'] = $extra['target'];
-        $object['section'] = $route['section'];
-        $object['module'] = $route['module'];
-        $object['package'] = $route['package'];
-        $object['handler'] = $route['handler'];
-        $object['method'] = $extra['method'];
-        $object['user_id'] = $extra['user_id'];
-        $object['name'] = $attributes['account']['name'];
-        $object['email'] = $attributes['account']['email'];
-        $object['identity'] = $attributes['account']['identity'];
-        $object['mobile'] = $attributes['account']['mobile'];
-        $object['roles'] = $attributes['roles'];
-        $object['ip'] = $serverParams['REMOTE_ADDR'];
-        unset($object['extra_data']);
-        $object['time_create_view'] = $this->date($object['extra_time_create']);
-        $object['roles_view'] = [];
 
+        $extra                      = $object['extra_data'] ?? null;
+        $attributes                 = $extra['attributes'] ?? null;
+        $route                      = $extra['route'] ?? null;
+        $serverParams               = $extra['serverParams'] ?? null;
+        $object['target']           = $extra['target'] ?? null;
+        $object['section']          = $route['section'] ?? null;
+        $object['module']           = $route['module'] ?? null;
+        $object['package']          = $route['package'] ?? null;
+        $object['handler']          = $route['handler'] ?? null;
+        $object['method']           = $extra['method'] ?? null;
+        $object['user_id']          = $extra['user_id'] ?? null;
+        $object['name']             = $attributes['account']['name'] ?? null;
+        $object['email']            = $attributes['account']['email'] ?? null;
+        $object['identity']         = $attributes['account']['identity'] ?? null;
+        $object['mobile']           = $attributes['account']['mobile'] ?? null;
+        $object['roles']            = $attributes['roles'] ?? null;
+        $object['ip']               = $serverParams['REMOTE_ADDR'] ?? null;
+        $object['time_create_view'] = $this->date($object['extra_time_create']);
+        $object['roles_view']       = [];
+        unset($object['extra_data']);
 
         return $object;
     }
 
     public function paramsFraming($params): array
     {
-        $limit = (int)($params['limit'] ?? 25);
-        $page = (int)($params['page'] ?? 1);
-        $order = $params['order'] ?? ['timestamp DESC', 'id DESC'];
+        $limit  = (int)($params['limit'] ?? 25);
+        $page   = (int)($params['page'] ?? 1);
+        $order  = $params['order'] ?? ['timestamp DESC', 'id DESC'];
         $offset = ($page - 1) * $limit;
 
         // Set params
         $listParams = [
-            'order' => $order,
+            'order'  => $order,
             'offset' => $offset,
-            'limit' => $limit,
-            'page' => $page,
+            'limit'  => $limit,
+            'page'   => $page,
         ];
 
         $paramNames = [
@@ -118,7 +119,7 @@ class UtilityService implements ServiceInterface
             }
         }
 
-        if (isset($nonEmptyParams['user_id'])&&!empty((int)$nonEmptyParams['user_id'])) {
+        if (isset($nonEmptyParams['user_id']) && !empty((int)$nonEmptyParams['user_id'])) {
             $nonEmptyParams['user_id'] = explode(',', $nonEmptyParams['user_id']);
         }
 
@@ -148,39 +149,39 @@ class UtilityService implements ServiceInterface
 
         if (is_object($object)) {
             $object = [
-                'id' => (int)$object->getId(),
-                'user_id' => $object->getUserId(),
-                'operator_id' => $object->getOperatorId(),
-                'time_create' => $object->getTimeCreate(),
-                'state' => $object->getState(),
-                'information' => $object->getInformation(),
+                'id'            => (int)$object->getId(),
+                'user_id'       => $object->getUserId(),
+                'operator_id'   => $object->getOperatorId(),
+                'time_create'   => $object->getTimeCreate(),
+                'state'         => $object->getState(),
+                'information'   => $object->getInformation(),
                 'user_identity' => $object->getUserIdentity(),
-                'user_name' => $object->getUserName(),
-                'user_email' => $object->getUserEmail(),
-                'user_mobile' => $object->getUserMobile(),
+                'user_name'     => $object->getUserName(),
+                'user_email'    => $object->getUserEmail(),
+                'user_mobile'   => $object->getUserMobile(),
             ];
         } else {
             $object = [
-                'id' => (int)$object['id'],
-                'user_id' => $object['user_id'],
-                'operator_id' => $object['operator_id'],
-                'time_create' => $object['time_create'],
-                'state' => $object['state'],
-                'information' => $object['information'],
+                'id'            => (int)$object['id'],
+                'user_id'       => $object['user_id'],
+                'operator_id'   => $object['operator_id'],
+                'time_create'   => $object['time_create'],
+                'state'         => $object['state'],
+                'information'   => $object['information'],
                 'user_identity' => $object['user_identity'],
-                'user_name' => $object['user_name'],
-                'user_email' => $object['user_email'],
-                'user_mobile' => $object['user_mobile'],
+                'user_name'     => $object['user_name'],
+                'user_email'    => $object['user_email'],
+                'user_mobile'   => $object['user_mobile'],
             ];
         }
 
-        $information = json_decode($object['information'], true);
+        $information                     = json_decode($object['information'], true);
         $information['params']['method'] = $information['params']['serverParams']['REQUEST_METHOD'];
-        $information['params']['ip'] = $information['params']['serverParams']['REMOTE_ADDR'];
+        $information['params']['ip']     = $information['params']['serverParams']['REMOTE_ADDR'];
         unset($information['params']['serverParams']);
-        $object['information'] = $information;
+        $object['information']      = $information;
         $object['time_create_view'] = $this->date($object['time_create']);
-        $object['roles_view'] = [];
+        $object['roles_view']       = [];
 
         return $object;
     }
@@ -205,6 +206,4 @@ class UtilityService implements ServiceInterface
         $formatter = new IntlDateFormatter($local, $datetype, $timetype, $timezone, $calendar, $pattern);
         return $formatter->format($date);
     }
-
-
 }
