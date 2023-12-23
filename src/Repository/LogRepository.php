@@ -30,16 +30,15 @@ class LogRepository implements LogRepositoryInterface
     private HydratorInterface $hydrator;
 
     public function __construct(
-        AdapterInterface  $db,
+        AdapterInterface $db,
         HydratorInterface $hydrator,
-        Inventory         $inventoryPrototype,
-        User              $userPrototype,
-    )
-    {
-        $this->db = $db;
-        $this->hydrator = $hydrator;
+        Inventory $inventoryPrototype,
+        User $userPrototype,
+    ) {
+        $this->db                 = $db;
+        $this->hydrator           = $hydrator;
         $this->inventoryPrototype = $inventoryPrototype;
-        $this->userPrototype = $userPrototype;
+        $this->userPrototype      = $userPrototype;
     }
 
     public function addUser(array $params = []): void
@@ -47,9 +46,9 @@ class LogRepository implements LogRepositoryInterface
         $insert = new Insert($this->tableUser);
         $insert->values($params);
 
-        $sql = new Sql($this->db);
+        $sql       = new Sql($this->db);
         $statement = $sql->prepareStatementForSqlObject($insert);
-        $result = $statement->execute();
+        $result    = $statement->execute();
 
         if (!$result instanceof ResultInterface) {
             throw new RuntimeException(
@@ -95,23 +94,23 @@ class LogRepository implements LogRepositoryInterface
             $where['time_create <= ?'] = $params['data_to'];
         }
 
-        $sql = new Sql($this->db);
-        $from = ['log' => $this->tableUser];
+        $sql    = new Sql($this->db);
+        $from   = ['log' => $this->tableUser];
         $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
             [
                 'user_identity' => 'identity',
-                'user_name' => 'name',
-                'user_email' => 'email',
-                'user_mobile' => 'mobile',
+                'user_name'     => 'name',
+                'user_email'    => 'email',
+                'user_mobile'   => 'mobile',
             ],
             $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
         );
 
         $statement = $sql->prepareStatementForSqlObject($select);
-        $result = $statement->execute();
+        $result    = $statement->execute();
 
         if (!$result instanceof ResultInterface || !$result->isQueryResult()) {
             return [];
@@ -127,7 +126,7 @@ class LogRepository implements LogRepositoryInterface
     {
         // Set where
         $columns = ['count' => new Expression('count(*)')];
-        $where = [];
+        $where   = [];
         if (isset($params['user_id']) && !empty($params['user_id'])) {
             $where['log.user_id'] = $params['user_id'];
         }
@@ -144,16 +143,16 @@ class LogRepository implements LogRepositoryInterface
             $where['account.name like ?'] = '%' . $params['name'] . '%';
         }
         if (isset($params['method']) && !empty($params['method'])) {
-            $where[' 1>0 AND log.information LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
+            $where['1>0 AND log.information LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
         }
         if (isset($params['ip']) && !empty($params['ip'])) {
             $where['2>1 AND log.information LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
         }
         if (isset($params['role']) && !empty($params['role'])) {
-            $where[' 3>2 AND log.information LIKE ?'] = '%"' . $params['role'] . '"%';
+            $where['3>2 AND log.information LIKE ?'] = '%"' . $params['role'] . '"%';
         }
         if (isset($params['identity']) && !empty($params['identity'])) {
-            $where[' 4>3 AND log.information LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
+            $where['4>3 AND log.information LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
         }
         if (!empty($params['data_from'])) {
             $where['time_create >= ?'] = $params['data_from'];
@@ -162,8 +161,8 @@ class LogRepository implements LogRepositoryInterface
             $where['time_create <= ?'] = $params['data_to'];
         }
 
-        $sql = new Sql($this->db);
-        $from = ['log' => $this->tableUser];
+        $sql    = new Sql($this->db);
+        $from   = ['log' => $this->tableUser];
         $select = $sql->select()->from($from)->columns($columns)->where($where);
         $select->join(
             ['account' => $this->tableAccount],
@@ -172,7 +171,7 @@ class LogRepository implements LogRepositoryInterface
             $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
         );
         $statement = $sql->prepareStatementForSqlObject($select);
-        $row = $statement->execute()->current();
+        $row       = $statement->execute()->current();
 
         return (int)$row['count'];
     }
@@ -184,6 +183,9 @@ class LogRepository implements LogRepositoryInterface
         if (isset($params['user_id']) & !empty($params['user_id'])) {
             $where['extra_user_id'] = $params['user_id'];
         }
+        if (isset($params['company_id']) & !empty($params['company_id'])) {
+            $where['extra_company_id'] = $params['company_id'];
+        }
         if (!empty($params['data_from'])) {
             $where['extra_time_create >= ?'] = $params['data_from'];
         }
@@ -191,11 +193,11 @@ class LogRepository implements LogRepositoryInterface
             $where['extra_time_create <= ?'] = $params['data_to'];
         }
 
-        $order = $params['order'] ?? ['timestamp DESC', 'id DESC'];
-        $sql = new Sql($this->db);
-        $select = $sql->select($this->tableLog)->where($where)->order($order)->offset($params['offset'])->limit($params['limit']);
+        $order     = $params['order'] ?? ['timestamp DESC', 'id DESC'];
+        $sql       = new Sql($this->db);
+        $select    = $sql->select($this->tableLog)->where($where)->order($order)->offset($params['offset'])->limit($params['limit']);
         $statement = $sql->prepareStatementForSqlObject($select);
-        $result = $statement->execute();
+        $result    = $statement->execute();
 
         if (!$result instanceof ResultInterface || !$result->isQueryResult()) {
             return [];
@@ -209,10 +211,13 @@ class LogRepository implements LogRepositoryInterface
     public function getInventoryLogCount(array $params = []): int
     {
         $columns = ['count' => new Expression('count(*)')];
-        $where = $this->createConditional($params);
+        $where   = $this->createConditional($params);
         ///The name of this parameter is different in the database [log_user , log_inventory] and should not be in the createCondition
         if (isset($params['user_id']) & !empty($params['user_id'])) {
             $where['extra_user_id'] = $params['user_id'];
+        }
+        if (isset($params['company_id']) & !empty($params['company_id'])) {
+            $where['extra_company_id'] = $params['company_id'];
         }
         if (!empty($params['data_from'])) {
             $where['extra_time_create >= ?'] = $params['data_from'];
@@ -220,10 +225,10 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['data_to'])) {
             $where['extra_time_create <= ?'] = $params['data_to'];
         }
-        $sql = new Sql($this->db);
-        $select = $sql->select($this->tableLog)->columns($columns)->where($where);
+        $sql       = new Sql($this->db);
+        $select    = $sql->select($this->tableLog)->columns($columns)->where($where);
         $statement = $sql->prepareStatementForSqlObject($select);
-        $row = $statement->execute()->current();
+        $row       = $statement->execute()->current();
         return (int)$row['count'];
     }
 
@@ -243,25 +248,25 @@ class LogRepository implements LogRepositoryInterface
             $where['message like ?'] = '%' . $params['message'] . '%';
         }
         if (!empty($params['method'])) {
-            $where[' 1>0 AND extra_data LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
+            $where['1>0 AND extra_data LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
         }
         if (!empty($params['email'])) {
-            $where[' 2>1 AND extra_data LIKE ?'] = '%"email": "%' . $params['email'] . '%';
+            $where['2>1 AND extra_data LIKE ?'] = '%"email": "%' . $params['email'] . '%';
         }
         if (!empty($params['name'])) {
-            $where[' 3>2 AND extra_data LIKE ?'] = '%"name": "%' . $params['name'] . '%';
+            $where['3>2 AND extra_data LIKE ?'] = '%"name": "%' . $params['name'] . '%';
         }
         if (!empty($params['ip'])) {
             $where['4>3 AND extra_data LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
         }
         if (!empty($params['role'])) {
-            $where[' 5>4 AND extra_data LIKE ?'] = '%"' . $params['role'] . '"%';
+            $where['5>4 AND extra_data LIKE ?'] = '%"' . $params['role'] . '"%';
         }
         if (!empty($params['identity'])) {
-            $where[' 6>5 AND extra_data LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
+            $where['6>5 AND extra_data LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
         }
         if (!empty($params['target'])) {
-            $where[' 7>6 AND extra_data LIKE ?'] = '%"target": "' . $params['target'] . '"%';
+            $where['7>6 AND extra_data LIKE ?'] = '%"target": "' . $params['target'] . '"%';
         }
 
         return $where;

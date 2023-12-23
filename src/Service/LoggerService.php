@@ -192,9 +192,10 @@ class LoggerService implements ServiceInterface
     {
         $listParams = $this->utilityService->paramsFraming($params);
 
-        $inventoryObjectList = $this->logRepository->readInventoryLog($listParams);
-        $list                = $this->utilityService->inventoryLogListCanonize($inventoryObjectList);
-        $count               = $this->logRepository->getInventoryLogCount($listParams);
+        $inventoryList = $this->logRepository->readInventoryLog($listParams);
+        $list          = $this->utilityService->inventoryLogListCanonize($inventoryList);
+        $count         = $this->logRepository->getInventoryLogCount($listParams);
+
         return [
             'result' => true,
             'data'   => [
@@ -213,8 +214,8 @@ class LoggerService implements ServiceInterface
     public function addUserLog(string $state, array $params): void
     {
         $params = [
-            'user_id'     => (int)($params['account']['id']??0),
-            'operator_id' => (int)(isset($params['operator'])?!empty($params['operator'])?$params['operator']['id']??0:0:0),
+            'user_id'     => (int)($params['account']['id'] ?? 0),
+            'operator_id' => (int)(isset($params['operator']) ? !empty($params['operator']) ? $params['operator']['id'] ?? 0 : 0 : 0),
             'time_create' => time(),
             'state'       => $state,
             'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK),
@@ -236,9 +237,6 @@ class LoggerService implements ServiceInterface
             'limit'  => $limit,
         ];
 
-        if (isset($params['user_id']) && !empty($params['user_id'])) {
-            $listParams['user_id'] = $params['user_id'];
-        }
         if (isset($params['state']) && !empty($params['state'])) {
             $listParams['state'] = $params['state'];
         }
@@ -264,7 +262,11 @@ class LoggerService implements ServiceInterface
             $listParams['identity'] = $params['identity'];
         }
         if (isset($params['user_id']) && !empty($params['user_id'])) {
-            $listParams['user_id'] = explode(',', $params['user_id']);
+            if (is_string($params['user_id']) && str_contains($params['user_id'], ',')) {
+                $listParams['user_id'] = explode(',', $params['user_id']);
+            } else {
+                $listParams['user_id'] = $params['user_id'];
+            }
         }
         if (isset($params['data_from']) && !empty($params['data_from'])) {
             $listParams['data_from'] = strtotime(

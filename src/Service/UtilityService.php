@@ -71,10 +71,11 @@ class UtilityService implements ServiceInterface
         $object['mobile']           = $attributes['account']['mobile'] ?? null;
         $object['roles']            = $attributes['roles'] ?? null;
         $object['ip']               = $serverParams['REMOTE_ADDR'] ?? null;
+        $object['parsedBody']       = $extra['parsedBody'] ?? null;
         $object['time_create_view'] = $this->date($object['extra_time_create']);
         $object['roles_view']       = [];
-        unset($object['extra_data']);
 
+        unset($object['extra_data']);
         return $object;
     }
 
@@ -92,6 +93,10 @@ class UtilityService implements ServiceInterface
             'limit'  => $limit,
             'page'   => $page,
         ];
+
+        if (isset($params['company_id']) && !empty($params['company_id'])) {
+            $listParams['company_id'] = $params['company_id'];
+        }
 
         $paramNames = [
             "ip",
