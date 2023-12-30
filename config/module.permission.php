@@ -4,22 +4,24 @@
 return [
     'admin' => [
         [
-            'module' => 'logger',
-            'section' => 'admin',
-            'package' => 'user',
-            'handler' => 'read',
+            'title'      => 'Admin logger user read',
+            'module'     => 'logger',
+            'section'    => 'admin',
+            'package'    => 'user',
+            'handler'    => 'read',
             'permission' => 'admin-logger-user-read',
-            'role' => [
+            'role'       => [
                 'admin',
             ],
         ],
         [
-            'module' => 'logger',
-            'section' => 'admin',
-            'package' => 'inventory',
-            'handler' => 'read',
+            'title'      => 'Admin logger inventory read',
+            'module'     => 'logger',
+            'section'    => 'admin',
+            'package'    => 'inventory',
+            'handler'    => 'read',
             'permission' => 'admin-logger-inventory-read',
-            'role' => [
+            'role'       => [
                 'admin',
             ],
         ],

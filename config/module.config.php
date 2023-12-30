@@ -4,7 +4,6 @@ namespace Logger;
 
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
-use Logger\Middleware\LoggerRequestMiddleware;
 use User\Middleware\AuthenticationMiddleware;
 use User\Middleware\AuthorizationMiddleware;
 use User\Middleware\SecurityMiddleware;
@@ -29,21 +28,21 @@ return [
         'routes' => [
             // Admin section
             'admin_content' => [
-                'type' => Literal::class,
-                'options' => [
-                    'route' => '/admin/logger',
+                'type'         => Literal::class,
+                'options'      => [
+                    'route'    => '/admin/logger',
                     'defaults' => [],
                 ],
                 'child_routes' => [
                     'installer' => [
-                        'type' => Literal::class,
+                        'type'    => Literal::class,
                         'options' => [
-                            'route' => '/installer',
+                            'route'    => '/installer',
                             'defaults' => [
-                                'module' => 'erm',
-                                'section' => 'admin',
-                                'package' => 'installer',
-                                'handler' => 'installer',
+                                'module'     => 'erm',
+                                'section'    => 'admin',
+                                'package'    => 'installer',
+                                'handler'    => 'installer',
                                 'controller' => PipeSpec::class,
                                 'middleware' => new PipeSpec(
                                     SecurityMiddleware::class,
@@ -55,21 +54,22 @@ return [
                         ],
                     ],
                     'inventory' => [
-                        'type' => Literal::class,
-                        'options' => [
-                            'route' => '/inventory',
+                        'type'         => Literal::class,
+                        'options'      => [
+                            'route'    => '/inventory',
                             'defaults' => [],
                         ],
                         'child_routes' => [
                             'read' => [
-                                'type' => Literal::class,
+                                'type'    => Literal::class,
                                 'options' => [
-                                    'route' => '/read',
+                                    'route'    => '/read',
                                     'defaults' => [
-                                        'module' => 'logger',
-                                        'section' => 'admin',
-                                        'package' => 'inventory',
-                                        'handler' => 'read',
+                                        'title'      => 'Admin logger user read',
+                                        'module'     => 'logger',
+                                        'section'    => 'admin',
+                                        'package'    => 'inventory',
+                                        'handler'    => 'read',
                                         'permission' => 'admin-logger-inventory-read',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
@@ -83,22 +83,23 @@ return [
                             ],
                         ],
                     ],
-                    'user' => [
-                        'type' => Literal::class,
-                        'options' => [
-                            'route' => '/user',
+                    'user'      => [
+                        'type'         => Literal::class,
+                        'options'      => [
+                            'route'    => '/user',
                             'defaults' => [],
                         ],
                         'child_routes' => [
                             'read' => [
-                                'type' => Literal::class,
+                                'type'    => Literal::class,
                                 'options' => [
-                                    'route' => '/read',
+                                    'route'    => '/read',
                                     'defaults' => [
-                                        'module' => 'logger',
-                                        'section' => 'admin',
-                                        'package' => 'user',
-                                        'handler' => 'read',
+                                        'title'      => 'Admin logger inventory read',
+                                        'module'     => 'logger',
+                                        'section'    => 'admin',
+                                        'package'    => 'user',
+                                        'handler'    => 'read',
                                         'permission' => 'admin-logger-user-read',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
