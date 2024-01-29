@@ -2,9 +2,9 @@
 
 namespace Logger\Factory\Handler\Admin;
 
-use Logger\Handler\Admin\InstallerHandler;
 use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Logger\Handler\Admin\InstallerHandler;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -15,8 +15,8 @@ class InstallerHandlerFactory implements FactoryInterface
 {
     /**
      * @param ContainerInterface $container
-     * @param string $requestedName
-     * @param null|array $options
+     * @param string             $requestedName
+     * @param null|array         $options
      *
      * @return InstallerHandler
      * @throws ContainerExceptionInterface

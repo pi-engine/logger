@@ -2,8 +2,6 @@
 
 namespace Logger\Factory\Middleware;
 
-use Improvement\Middleware\ImprovementAddMiddleware;
-use Improvement\Service\ImprovementService;
 use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Logger\Middleware\LoggerRequestMiddleware;

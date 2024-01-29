@@ -15,9 +15,9 @@ class Inventory
     private string $extra_data;
 
     /**
-     * @param mixed $id
+     * @param mixed  $id
      * @param string $timestamp
-     * @param int $priority
+     * @param int    $priority
      * @param string $priorityName
      * @param string $message
      * @param string $extra_user_id
@@ -25,17 +25,26 @@ class Inventory
      * @param string $extra_company_id
      * @param string $extra_data
      */
-    public function __construct(mixed $id, string $timestamp, int $priority, string $priorityName, string $message, string $extra_user_id, string $extra_time_create, string $extra_company_id, string $extra_data)
-    {
-        $this->id = $id;
-        $this->timestamp = $timestamp;
-        $this->priority = $priority;
-        $this->priorityName = $priorityName;
-        $this->message = $message;
-        $this->extra_user_id = $extra_user_id;
+    public function __construct(
+        mixed $id,
+        string $timestamp,
+        int $priority,
+        string $priorityName,
+        string $message,
+        string $extra_user_id,
+        string $extra_time_create,
+        string $extra_company_id,
+        string $extra_data
+    ) {
+        $this->id                = $id;
+        $this->timestamp         = $timestamp;
+        $this->priority          = $priority;
+        $this->priorityName      = $priorityName;
+        $this->message           = $message;
+        $this->extra_user_id     = $extra_user_id;
         $this->extra_time_create = $extra_time_create;
-        $this->extra_company_id = $extra_company_id;
-        $this->extra_data = $extra_data;
+        $this->extra_company_id  = $extra_company_id;
+        $this->extra_data        = $extra_data;
     }
 
     /**
@@ -181,7 +190,6 @@ class Inventory
     {
         $this->extra_data = $extra_data;
     }
-
 
 
 }

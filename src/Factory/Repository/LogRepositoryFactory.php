@@ -2,8 +2,6 @@
 
 namespace Logger\Factory\Repository;
 
-use Audit\Model\Plan;
-use Audit\Repository\AuditRepository;
 use Interop\Container\Containerinterface;
 use Laminas\Db\Adapter\AdapterInterface;
 use Laminas\Hydrator\ReflectionHydrator;
@@ -19,8 +17,8 @@ class LogRepositoryFactory implements FactoryInterface
         return new LogRepository(
             $container->get(AdapterInterface::class),
             new ReflectionHydrator(),
-            new Inventory(0, 0,0,0,0, 0, 0, 0, 0),
-            new User(0, 0,0,0,0,0,0, 0, 0, 0),
+            new Inventory(0, 0, 0, 0, 0, 0, 0, 0, 0),
+            new User(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
         );
     }
 }

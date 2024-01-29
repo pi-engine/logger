@@ -2,8 +2,8 @@
 
 namespace Logger\Handler\Admin\Inventory;
 
-use Logger\Service\LoggerService;
 use Laminas\Diactoros\Response\JsonResponse;
+use Logger\Service\LoggerService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -23,13 +23,12 @@ class InventoryReadHandler implements RequestHandlerInterface
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface   $streamFactory,
-        LoggerService              $loggerService
-    )
-    {
+        StreamFactoryInterface $streamFactory,
+        LoggerService $loggerService
+    ) {
         $this->responseFactory = $responseFactory;
-        $this->streamFactory = $streamFactory;
-        $this->loggerService = $loggerService;
+        $this->streamFactory   = $streamFactory;
+        $this->loggerService   = $loggerService;
     }
 
     /**
@@ -38,11 +37,11 @@ class InventoryReadHandler implements RequestHandlerInterface
      * @return ResponseInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
-    { 
+    {
         $account = $request->getAttribute('account');
-        
+
         // Retrieve the raw JSON data from the request body
-        $stream = $this->streamFactory->createStreamFromFile('php://input');
+        $stream  = $this->streamFactory->createStreamFromFile('php://input');
         $rawData = $stream->getContents();
 
         // Decode the raw JSON data into an associative array
@@ -50,7 +49,5 @@ class InventoryReadHandler implements RequestHandlerInterface
 
         $result = $this->loggerService->readInventoryLog($requestBody);
         return new JsonResponse($result);
-
-
     }
 }

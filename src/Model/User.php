@@ -10,10 +10,10 @@ class User
     private int    $time_create;
     private string $state;
     private string $information;
-    private mixed $user_identity;
-    private mixed $user_name;
-    private mixed $user_email;
-    private mixed $user_mobile;
+    private mixed  $user_identity;
+    private mixed  $user_name;
+    private mixed  $user_email;
+    private mixed  $user_mobile;
 
     public function __construct(
         $user_id,
@@ -27,16 +27,16 @@ class User
         $user_mobile = null,
         $id = null
     ) {
-        $this->user_id     = $user_id;
-        $this->operator_id     = $operator_id;
-        $this->time_create = $time_create;
-        $this->state       = $state;
-        $this->information = $information;
-        $this->user_identity       = $user_identity;
-        $this->user_name           = $user_name;
-        $this->user_email          = $user_email;
-        $this->user_mobile         = $user_mobile;
-        $this->id          = $id;
+        $this->user_id       = $user_id;
+        $this->operator_id   = $operator_id;
+        $this->time_create   = $time_create;
+        $this->state         = $state;
+        $this->information   = $information;
+        $this->user_identity = $user_identity;
+        $this->user_name     = $user_name;
+        $this->user_email    = $user_email;
+        $this->user_mobile   = $user_mobile;
+        $this->id            = $id;
     }
 
     public function getId(): ?int
@@ -64,7 +64,6 @@ class User
     {
         $this->operator_id = $operator_id;
     }
-
 
 
     public function getTimeCreate(): int

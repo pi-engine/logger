@@ -4,9 +4,9 @@ namespace Logger\Factory\Service;
 
 use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Logger\Service\UtilityService;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Logger\Service\UtilityService;
 
 class UtilityServiceFactory implements FactoryInterface
 {

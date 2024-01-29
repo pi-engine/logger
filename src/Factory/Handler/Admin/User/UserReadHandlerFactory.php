@@ -15,14 +15,14 @@ class UserReadHandlerFactory implements FactoryInterface
 {
     /**
      * @param ContainerInterface $container
-     * @param string $requestedName
-     * @param array|null $options
+     * @param string             $requestedName
+     * @param array|null         $options
      *
      * @return UserReadHandler
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null):UserReadHandler
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): UserReadHandler
     {
         return new UserReadHandler(
             $container->get(ResponseFactoryInterface::class),

@@ -15,14 +15,14 @@ class InventoryReadHandlerFactory implements FactoryInterface
 {
     /**
      * @param ContainerInterface $container
-     * @param string $requestedName
-     * @param array|null $options
+     * @param string             $requestedName
+     * @param array|null         $options
      *
      * @return InventoryReadHandler
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null):InventoryReadHandler
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): InventoryReadHandler
     {
         return new InventoryReadHandler(
             $container->get(ResponseFactoryInterface::class),
