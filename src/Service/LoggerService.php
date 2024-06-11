@@ -9,6 +9,7 @@ use Laminas\Log\Writer\Db;
 use Laminas\Log\Writer\MongoDB;
 use Laminas\Log\Writer\Stream;
 use Logger\Repository\LogRepositoryInterface;
+use MongoDB\Client;
 use MongoDB\Driver\Manager;
 
 class LoggerService implements ServiceInterface
@@ -119,13 +120,11 @@ class LoggerService implements ServiceInterface
 
     public function writeToMongo(string $message, array $params): void
     {
-        // Set writer
-        $manager = new Manager();
+        $manager = new Manager($this->config['mongodb']['uri']);
         $writer  = new MongoDB(
             $manager,
             $this->config['mongodb']['database'],
-            $this->config['mongodb']['collection'],
-            $this->config['mongodb']['saveOptions']
+            $this->config['mongodb']['collection']
         );
 
         // Save log
