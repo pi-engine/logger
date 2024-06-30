@@ -18,7 +18,7 @@ return [
             Service\UtilityService::class                       => Factory\Service\UtilityServiceFactory::class,
             Service\LoggerService::class                        => Factory\Service\LoggerServiceFactory::class,
             Middleware\LoggerRequestMiddleware::class           => Factory\Middleware\LoggerRequestMiddlewareFactory::class,
-            Handler\Admin\InstallerHandler::class               => Factory\Handler\Admin\InstallerHandlerFactory::class,
+            Handler\InstallerHandler::class                     => Factory\Handler\InstallerHandlerFactory::class,
             Handler\Admin\Inventory\InventoryReadHandler::class => Factory\Handler\Admin\Inventory\InventoryReadHandlerFactory::class,
             Handler\Admin\User\UserReadHandler::class           => Factory\Handler\Admin\User\UserReadHandlerFactory::class,
         ],
@@ -48,7 +48,7 @@ return [
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
 //                                    LoggerRequestMiddleware::class,
-                                    Handler\Admin\InstallerHandler::class
+                                    Handler\InstallerHandler::class
                                 ),
                             ],
                         ],

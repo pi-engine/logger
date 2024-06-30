@@ -1,6 +1,6 @@
 <?php
 
-namespace Logger\Handler\Admin;
+namespace Logger\Handler;
 
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use stdClass;
 use User\Service\InstallerService;
 
 class InstallerHandler implements RequestHandlerInterface
@@ -33,16 +34,16 @@ class InstallerHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $permissionFile = include realpath(__DIR__ . '/../../../config/module.permission.php');
+        $permissionFile = include realpath(__DIR__ . '/../../config/module.permission.php');
 
-        $this->installerService->installPermission('content', $permissionFile);
+        $this->installerService->installPermission('logger', $permissionFile);
 
         // Set result
         return new JsonResponse(
             [
                 'result' => true,
-                'data'   => [],
-                'error'  => [],
+                'data'   => new stdClass(),
+                'error'  => new stdClass(),
             ],
         );
     }

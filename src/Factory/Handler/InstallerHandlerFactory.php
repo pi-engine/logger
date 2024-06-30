@@ -1,10 +1,10 @@
 <?php
 
-namespace Logger\Factory\Handler\Admin;
+namespace Logger\Factory\Handler;
 
 use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Logger\Handler\Admin\InstallerHandler;
+use Logger\Handler\InstallerHandler;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
