@@ -6,6 +6,7 @@ use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
 use User\Middleware\AuthenticationMiddleware;
 use User\Middleware\AuthorizationMiddleware;
+use User\Middleware\RequestPreparationMiddleware;
 use User\Middleware\SecurityMiddleware;
 
 return [
@@ -45,6 +46,7 @@ return [
                                 'handler'    => 'installer',
                                 'controller' => PipeSpec::class,
                                 'middleware' => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
 //                                    LoggerRequestMiddleware::class,
@@ -73,6 +75,7 @@ return [
                                         'permission' => 'admin-logger-inventory-read',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             AuthorizationMiddleware::class,
@@ -103,6 +106,7 @@ return [
                                         'permission' => 'admin-logger-user-read',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             AuthorizationMiddleware::class,
