@@ -38,16 +38,8 @@ class UserReadHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $account = $request->getAttribute('account');
-
-        // Retrieve the raw JSON data from the request body
-        $stream  = $this->streamFactory->createStreamFromFile('php://input');
-        $rawData = $stream->getContents();
-
-        // Decode the raw JSON data into an associative array
-        $requestBody = json_decode($rawData, true);
-
-        $result = $this->loggerService->getUserLog($requestBody);
+        $requestBody = $request->getParsedBody();
+        $result      = $this->loggerService->getUserLog($requestBody);
         return new JsonResponse($result);
     }
 }
