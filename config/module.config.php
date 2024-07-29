@@ -28,7 +28,7 @@ return [
     'router' => [
         'routes' => [
             // Admin section
-            'admin_content' => [
+            'admin_logger' => [
                 'type'         => Literal::class,
                 'options'      => [
                     'route'    => '/admin/logger',
