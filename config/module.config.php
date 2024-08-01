@@ -19,12 +19,12 @@ return [
             Service\UtilityService::class                       => Factory\Service\UtilityServiceFactory::class,
             Service\LoggerService::class                        => Factory\Service\LoggerServiceFactory::class,
             Middleware\LoggerRequestMiddleware::class           => Factory\Middleware\LoggerRequestMiddlewareFactory::class,
+            Middleware\LoggerRequestResponseMiddleware::class   => Factory\Middleware\LoggerRequestResponseMiddlewareFactory::class,
             Handler\InstallerHandler::class                     => Factory\Handler\InstallerHandlerFactory::class,
             Handler\Admin\Inventory\InventoryReadHandler::class => Factory\Handler\Admin\Inventory\InventoryReadHandlerFactory::class,
             Handler\Admin\User\UserReadHandler::class           => Factory\Handler\Admin\User\UserReadHandlerFactory::class,
         ],
     ],
-
     'router' => [
         'routes' => [
             // Admin section
@@ -121,7 +121,6 @@ return [
             ],
         ],
     ],
-
     'view_manager' => [
         'strategies' => [
             'ViewJsonStrategy',
