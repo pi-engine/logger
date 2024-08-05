@@ -10,6 +10,7 @@ use Laminas\Log\Writer\MongoDB;
 use Laminas\Log\Writer\Stream;
 use Logger\Repository\LogRepositoryInterface;
 use MongoDB\Driver\Manager;
+use User\Service\UtilityService;
 
 class LoggerService implements ServiceInterface
 {
@@ -27,6 +28,16 @@ class LoggerService implements ServiceInterface
 
     /* @var string */
     protected string $tableLog = 'log_inventory';
+
+    protected array $forbiddenParams
+        = [
+            'credential',
+            'credentialColumn',
+            'access_token',
+            'refresh_token',
+            'token_payload',
+            'permission',
+        ];
 
     public function __construct(
         LogRepositoryInterface $logRepository,
@@ -70,6 +81,9 @@ class LoggerService implements ServiceInterface
 
     public function write(string $message, array $params = [], int $priority = null): void
     {
+        // Clean up
+        $params = $this->cleanupForbiddenKeys($params);
+
         // Set priority
         if (is_numeric($priority)) {
             $this->setPriority($priority);
@@ -186,18 +200,35 @@ class LoggerService implements ServiceInterface
     {
     }
 
+    public function cleanupForbiddenKeys(array $params): array
+    {
+        foreach ($params as $key => $value) {
+            if (in_array($key, $this->forbiddenParams)) {
+                unset($params[$key]);
+            } elseif (is_array($value)) {
+                $params[$key] = $this->cleanupForbiddenKeys($value);
+            }
+        }
+
+        return $params;
+    }
+
     public function readInventoryLog($params): array
     {
-        $listParams = $this->utilityService->paramsFraming($params);
-
+        $list          = [];
+        $listParams    = $this->paramsFraming($params);
         $inventoryList = $this->logRepository->readInventoryLog($listParams);
-        $list          = $this->utilityService->inventoryLogListCanonize($inventoryList);
-        $count         = $this->logRepository->getInventoryLogCount($listParams);
+        foreach ($inventoryList as $object) {
+            $list[] = $this->canonizeInventoryLog($object);
+        }
+
+        // Get count
+        $count = $this->logRepository->getInventoryLogCount($listParams);
 
         return [
             'result' => true,
             'data'   => [
-                'list'      => $list,
+                'list'      => array_values($list),
                 'paginator' => [
                     'count' => $count,
                     'limit' => (int)$listParams['limit'],
@@ -286,7 +317,7 @@ class LoggerService implements ServiceInterface
         $list   = [];
         $rowSet = $this->logRepository->getUserList($listParams);
         foreach ($rowSet as $row) {
-            $list[] = $this->utilityService->canonizeUserLog($row);
+            $list[] = $this->canonizeUserLog($row);
         }
 
         // Get count
@@ -304,5 +335,189 @@ class LoggerService implements ServiceInterface
             ],
             'error'  => [],
         ];
+    }
+
+    public function paramsFraming($params): array
+    {
+        $limit  = (int)($params['limit'] ?? 25);
+        $page   = (int)($params['page'] ?? 1);
+        $order  = $params['order'] ?? ['timestamp DESC', 'id DESC'];
+        $offset = ($page - 1) * $limit;
+
+        // Set params
+        $listParams = [
+            'order'  => $order,
+            'offset' => $offset,
+            'limit'  => $limit,
+            'page'   => $page,
+        ];
+
+        if (isset($params['company_id']) && !empty($params['company_id'])) {
+            $listParams['company_id'] = $params['company_id'];
+        }
+
+        $paramNames = [
+            "ip",
+            "order",
+            "identity",
+            "role",
+            "target",
+            "name",
+            "email",
+            "module",
+            "section",
+            "identity",
+            "data_from",
+            "data_to",
+            "priority_name",
+            "method",
+            "user_id",
+        ];
+
+        $nonEmptyParams = [];
+        foreach ($paramNames as $paramName) {
+            if (isset($params[$paramName]) && $params[$paramName] !== '') {
+                $nonEmptyParams[$paramName] = $params[$paramName];
+            }
+        }
+
+        if (isset($nonEmptyParams['user_id']) && !empty((int)$nonEmptyParams['user_id'])) {
+            $nonEmptyParams['user_id'] = explode(',', $nonEmptyParams['user_id']);
+        }
+
+        if (isset($nonEmptyParams['data_from']) && !empty($nonEmptyParams['data_from'])) {
+            $nonEmptyParams['data_from'] = strtotime(
+                ($params['data_from']) != null
+                    ? sprintf('%s 00:00:00', $params['data_from'])
+                    : sprintf('%s 00:00:00', date('Y-m-d', strtotime('-1 month')))
+            );
+        }
+
+        if (isset($nonEmptyParams['data_to']) && !empty($nonEmptyParams['data_to'])) {
+            $nonEmptyParams['data_to'] = strtotime(
+                ($nonEmptyParams['data_to']) != null
+                    ? sprintf('%s 00:00:00', $params['data_to'])
+                    : sprintf('%s 23:59:59', date('Y-m-d'))
+            );
+        }
+        return array_merge($listParams, $nonEmptyParams);
+    }
+
+    public function canonizeInventoryLog($object): array
+    {
+        if (empty($object)) {
+            return [];
+        }
+
+        if (is_object($object)) {
+            $object = [
+                'id'                => (int)$object->getId(),
+                'timestamp'         => $object->getTimestamp(),
+                'priority'          => $object->getPriority(),
+                'priority_name'     => $object->getPriorityName(),
+                'message'           => $object->getMessage(),
+                'extra_data'        => $object->getExtraData(),
+                'extra_time_create' => $object->getExtraTimeCreate(),
+                'extra_user_id'     => $object->getExtraUserId(),
+                'extra_company_id'  => $object->getExtraCompanyId(),
+            ];
+        } else {
+            $object = [
+                'id'                => (int)$object['id'],
+                'timestamp'         => $object['timestamp'],
+                'priority'          => $object['priority'],
+                'priority_name'     => $object['priorityName'],
+                'message'           => $object['message'],
+                'extra_data'        => $object['extra_data'],
+                'extra_time_create' => $object['extra_time_create'],
+                'extra_user_id'     => $object['extra_user_id'],
+                'extra_company_id'  => $object['extra_company_id'],
+            ];
+        }
+
+        // Set information
+        $information = !empty($object['extra_data']) ? json_decode($object['extra_data'], true) : [];
+        unset($object['extra_data']);
+
+        // Set security report
+        $streamSecurity = null;
+        if (isset($information['request']['attributes']['security_stream']) && !empty($information['request']['attributes']['security_stream'])) {
+            foreach ($information['request']['attributes']['security_stream'] as $securityItem) {
+                $streamSecurity[] = [
+                    'name'   => $securityItem['name'],
+                    'status' => $securityItem['status'],
+                ];
+            }
+        }
+
+        // Set output params
+        $object['time_create_view'] = $this->utilityService->date($object['extra_time_create']);
+        $object['user_id']          = $information['user_id'] ?? null;
+        $object['ip']               = $information['ip'] ?? null;
+        $object['title']            = $information['route']['title'] ?? null;
+        $object['method']           = $information['request']['method'] ?? null;
+        $object['target']           = $information['request']['target'] ?? null;
+        $object['section']          = $information['route']['section'] ?? null;
+        $object['module']           = $information['route']['module'] ?? null;
+        $object['package']          = $information['route']['package'] ?? null;
+        $object['handler']          = $information['route']['handler'] ?? null;
+        $object['name']             = $information['request']['attributes']['account']['name'] ?? null;
+        $object['email']            = $information['request']['attributes']['account']['email'] ?? null;
+        $object['identity']         = $information['request']['attributes']['account']['identity'] ?? null;
+        $object['mobile']           = $information['request']['attributes']['account']['mobile'] ?? null;
+        $object['company_id']       = $information['company_id'] ?? null;
+        $object['company_title']    = $information['request']['attributes']['company_authorization']['company']['title'] ?? null;
+        $object['package_id']       = $information['request']['attributes']['company_authorization']['package']['id'] ?? null;
+        $object['package_title']    = $information['request']['attributes']['company_authorization']['package']['title'] ?? null;
+        $object['request_body']     = $information['request']['parsedBody'] ?? null;
+        $object['security_stream']  = $streamSecurity;
+
+        return $object;
+    }
+
+    public function canonizeUserLog($object): array
+    {
+        if (empty($object)) {
+            return [];
+        }
+
+        if (is_object($object)) {
+            $object = [
+                'id'            => (int)$object->getId(),
+                'user_id'       => $object->getUserId(),
+                'operator_id'   => $object->getOperatorId(),
+                'time_create'   => $object->getTimeCreate(),
+                'state'         => $object->getState(),
+                'information'   => $object->getInformation(),
+                'user_identity' => $object->getUserIdentity(),
+                'user_name'     => $object->getUserName(),
+                'user_email'    => $object->getUserEmail(),
+                'user_mobile'   => $object->getUserMobile(),
+            ];
+        } else {
+            $object = [
+                'id'            => (int)$object['id'],
+                'user_id'       => $object['user_id'],
+                'operator_id'   => $object['operator_id'],
+                'time_create'   => $object['time_create'],
+                'state'         => $object['state'],
+                'information'   => $object['information'],
+                'user_identity' => $object['user_identity'],
+                'user_name'     => $object['user_name'],
+                'user_email'    => $object['user_email'],
+                'user_mobile'   => $object['user_mobile'],
+            ];
+        }
+
+        // Set information
+        $object['information'] = json_decode($object['information'], true);
+
+        // Unset not used data
+        unset($object['information']['params']['serverParams']);
+
+        // Set data
+        $object['time_create_view'] = $this->utilityService->date($object['time_create']);
+
+        return $object;
     }
 }

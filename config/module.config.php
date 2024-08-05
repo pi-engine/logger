@@ -16,7 +16,6 @@ return [
         ],
         'factories' => [
             Repository\LogRepository::class                     => Factory\Repository\LogRepositoryFactory::class,
-            Service\UtilityService::class                       => Factory\Service\UtilityServiceFactory::class,
             Service\LoggerService::class                        => Factory\Service\LoggerServiceFactory::class,
             Middleware\LoggerRequestMiddleware::class           => Factory\Middleware\LoggerRequestMiddlewareFactory::class,
             Middleware\LoggerRequestResponseMiddleware::class   => Factory\Middleware\LoggerRequestResponseMiddlewareFactory::class,
@@ -49,7 +48,6 @@ return [
                                     RequestPreparationMiddleware::class,
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
-//                                    LoggerRequestMiddleware::class,
                                     Handler\InstallerHandler::class
                                 ),
                             ],
