@@ -43,7 +43,7 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
         $response = $handler->handle($request);
 
         // Post-handler logic
-        $this->writeRequestResponse( $request,  $response);
+        $this->writeRequestResponse($request, $response);
 
         return $response;
     }
@@ -70,6 +70,7 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
         $params = [
             'user_id'    => $attributes['account']['id'] ?? 0,
             'company_id' => $attributes['company_authorization']['company_id'] ?? 0,
+            'ip'         => $request->getServerParams()['REMOTE_ADDR'],
             'route'      => $routeParams,
             'request'    => [
                 'method'          => $request->getMethod(),

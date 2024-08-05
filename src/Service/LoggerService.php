@@ -9,7 +9,6 @@ use Laminas\Log\Writer\Db;
 use Laminas\Log\Writer\MongoDB;
 use Laminas\Log\Writer\Stream;
 use Logger\Repository\LogRepositoryInterface;
-use MongoDB\Client;
 use MongoDB\Driver\Manager;
 
 class LoggerService implements ServiceInterface
