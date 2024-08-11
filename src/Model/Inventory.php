@@ -190,6 +190,4 @@ class Inventory
     {
         $this->extra_data = $extra_data;
     }
-
-
 }
