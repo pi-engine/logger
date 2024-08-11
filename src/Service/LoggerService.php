@@ -129,6 +129,11 @@ class LoggerService implements ServiceInterface
             'company_id'  => (int)$params['company_id'],
             'data'        => $data,
         ]);
+
+        // Check and cleanup
+        if (isset($this->config['cleanup']) && (bool)$this->config['cleanup'] === true) {
+            $this->cleanUpMysql();
+        }
     }
 
     public function writeToMongo(string $message, array $params): void
@@ -162,32 +167,10 @@ class LoggerService implements ServiceInterface
         $logger->log($this->priority, $message, $params);
     }
 
-    public function cleanUp(): void
-    {
-        $storage = $this->config['storage'] ?? 'disable';
-        switch ($storage) {
-            case 'mysql':
-                $this->cleanUpMysql();
-                break;
-
-            case 'mongodb':
-                $this->cleanUpMongo();
-                break;
-
-            case 'file':
-                $this->cleanUpFile();
-                break;
-
-            case '':
-            case 'disable':
-            default:
-                break;
-        }
-    }
-
-    // ToDo: Finish it
     public function cleanUpMysql(): void
     {
+        $limitation = $this->config['limitation'] ?? 10000;
+        $this->logRepository->cleanup($limitation);
     }
 
     // ToDo: Finish it

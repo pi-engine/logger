@@ -272,4 +272,39 @@ class LogRepository implements LogRepositoryInterface
         return $where;
     }
 
+    public function cleanup(int $limitation = 10000): void
+    {
+        // Set columns
+        $columns = ['count' => new Expression('count(*)')];
+
+        // Get count
+        $sql       = new Sql($this->db);
+        $select    = $sql->select($this->tableLog)->columns($columns);
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $row       = $statement->execute()->current();
+        $count     = (int)$row['count'];
+
+        // Check count and delete
+        if ($count > $limitation) {
+            // Get first available id
+            $select    = $sql->select($this->tableLog)->columns(['id'])->order('id ASC')->limit(1);
+            $statement = $sql->prepareStatementForSqlObject($select);
+            $row       = $statement->execute()->current();
+
+            // Check id and delete
+            if (isset($row['id']) && (int)$row['id'] > 0) {
+                // Do Delete
+                $where     = ['id' => (int)$row['id']];
+                $delete    = $sql->delete($this->tableLog)->where($where);
+                $statement = $sql->prepareStatementForSqlObject($delete);
+                $result    = $statement->execute();
+
+                if (!$result instanceof ResultInterface) {
+                    throw new RuntimeException(
+                        'Database error occurred during update operation'
+                    );
+                }
+            }
+        }
+    }
 }

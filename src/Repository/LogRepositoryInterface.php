@@ -13,4 +13,6 @@ interface LogRepositoryInterface
     public function getUserCount(array $params = []): int;
 
     public function readInventoryLog(array $params = []): HydratingResultSet|array;
+
+    public function cleanup(int $limitation = 1000): void;
 }
