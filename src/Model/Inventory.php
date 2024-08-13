@@ -9,32 +9,32 @@ class Inventory
     private int    $priority;
     private string $priorityName;
     private string $message;
-    private string $extra_user_id;
-    private string $extra_time_create;
-    private string $extra_company_id;
+    private int    $extra_user_id;
+    private int    $extra_company_id;
+    private int    $extra_time_create;
     private string $extra_data;
 
     /**
-     * @param mixed  $id
-     * @param string $timestamp
-     * @param int    $priority
-     * @param string $priorityName
-     * @param string $message
-     * @param string $extra_user_id
-     * @param string $extra_time_create
-     * @param string $extra_company_id
-     * @param string $extra_data
+     * @param string     $timestamp
+     * @param int        $priority
+     * @param string     $priorityName
+     * @param string     $message
+     * @param int     $extra_user_id
+     * @param int     $extra_company_id
+     * @param int     $extra_time_create
+     * @param string     $extra_data
+     * @param mixed|null $id
      */
     public function __construct(
-        mixed $id,
         string $timestamp,
         int $priority,
         string $priorityName,
         string $message,
-        string $extra_user_id,
-        string $extra_time_create,
-        string $extra_company_id,
-        string $extra_data
+        int $extra_user_id,
+        int $extra_company_id,
+        int $extra_time_create,
+        string $extra_data,
+        mixed $id = null
     ) {
         $this->id                = $id;
         $this->timestamp         = $timestamp;
@@ -128,49 +128,49 @@ class Inventory
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getExtraUserId(): string
+    public function getExtraUserId(): int
     {
         return $this->extra_user_id;
     }
 
     /**
-     * @param string $extra_user_id
+     * @param int $extra_user_id
      */
-    public function setExtraUserId(string $extra_user_id): void
+    public function setExtraUserId(int $extra_user_id): void
     {
         $this->extra_user_id = $extra_user_id;
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getExtraTimeCreate(): string
+    public function getExtraTimeCreate(): int
     {
         return $this->extra_time_create;
     }
 
     /**
-     * @param string $extra_time_create
+     * @param int $extra_time_create
      */
-    public function setExtraTimeCreate(string $extra_time_create): void
+    public function setExtraTimeCreate(int $extra_time_create): void
     {
         $this->extra_time_create = $extra_time_create;
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getExtraCompanyId(): string
+    public function getExtraCompanyId(): int
     {
         return $this->extra_company_id;
     }
 
     /**
-     * @param string $extra_company_id
+     * @param int $extra_company_id
      */
-    public function setExtraCompanyId(string $extra_company_id): void
+    public function setExtraCompanyId(int $extra_company_id): void
     {
         $this->extra_company_id = $extra_company_id;
     }

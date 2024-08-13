@@ -468,27 +468,27 @@ class LoggerService implements ServiceInterface
             $object = [
                 'id'            => (int)$object->getId(),
                 'user_id'       => $object->getUserId(),
-                'operator_id'   => $object->getOperatorId(),
-                'time_create'   => $object->getTimeCreate(),
-                'state'         => $object->getState(),
-                'information'   => $object->getInformation(),
                 'user_identity' => $object->getUserIdentity(),
                 'user_name'     => $object->getUserName(),
                 'user_email'    => $object->getUserEmail(),
                 'user_mobile'   => $object->getUserMobile(),
+                'operator_id'   => $object->getOperatorId(),
+                'time_create'   => $object->getTimeCreate(),
+                'state'         => $object->getState(),
+                'information'   => $object->getInformation(),
             ];
         } else {
             $object = [
                 'id'            => (int)$object['id'],
                 'user_id'       => $object['user_id'],
-                'operator_id'   => $object['operator_id'],
-                'time_create'   => $object['time_create'],
-                'state'         => $object['state'],
-                'information'   => $object['information'],
                 'user_identity' => $object['user_identity'],
                 'user_name'     => $object['user_name'],
                 'user_email'    => $object['user_email'],
                 'user_mobile'   => $object['user_mobile'],
+                'operator_id'   => $object['operator_id'],
+                'time_create'   => $object['time_create'],
+                'state'         => $object['state'],
+                'information'   => $object['information'],
             ];
         }
 
@@ -497,6 +497,7 @@ class LoggerService implements ServiceInterface
 
         // Unset not used data
         unset($object['information']['params']['serverParams']);
+        unset($object['information']['request']['security_stream']);
 
         // Set data
         $object['time_create_view'] = $this->utilityService->date($object['time_create']);

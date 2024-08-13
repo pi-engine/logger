@@ -14,6 +14,10 @@ class User
     private mixed  $user_name;
     private mixed  $user_email;
     private mixed  $user_mobile;
+    private mixed  $operator_identity;
+    private mixed  $operator_name;
+    private mixed  $operator_email;
+    private mixed  $operator_mobile;
 
     public function __construct(
         $user_id,
@@ -25,6 +29,10 @@ class User
         $user_name = null,
         $user_email = null,
         $user_mobile = null,
+        $operator_identity = null,
+        $operator_name = null,
+        $operator_email = null,
+        $operator_mobile = null,
         $id = null
     ) {
         $this->user_id       = $user_id;
@@ -36,6 +44,10 @@ class User
         $this->user_name     = $user_name;
         $this->user_email    = $user_email;
         $this->user_mobile   = $user_mobile;
+        $this->operator_identity = $operator_identity;
+        $this->operator_name     = $operator_name;
+        $this->operator_email    = $operator_email;
+        $this->operator_mobile   = $operator_mobile;
         $this->id            = $id;
     }
 
@@ -99,5 +111,25 @@ class User
     public function getUserMobile(): ?string
     {
         return $this->user_mobile;
+    }
+
+    public function getOperatorIdentity(): ?string
+    {
+        return $this->operator_identity;
+    }
+
+    public function getOperatorName(): ?string
+    {
+        return $this->operator_name;
+    }
+
+    public function getOperatorEmail(): ?string
+    {
+        return $this->operator_email;
+    }
+
+    public function getOperatorMobile(): ?string
+    {
+        return $this->operator_mobile;
     }
 }
