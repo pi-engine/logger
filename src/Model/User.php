@@ -35,20 +35,20 @@ class User
         $operator_mobile = null,
         $id = null
     ) {
-        $this->user_id       = $user_id;
-        $this->operator_id   = $operator_id;
-        $this->time_create   = $time_create;
-        $this->state         = $state;
-        $this->information   = $information;
-        $this->user_identity = $user_identity;
-        $this->user_name     = $user_name;
-        $this->user_email    = $user_email;
-        $this->user_mobile   = $user_mobile;
+        $this->user_id           = $user_id;
+        $this->operator_id       = $operator_id;
+        $this->time_create       = $time_create;
+        $this->state             = $state;
+        $this->information       = $information;
+        $this->user_identity     = $user_identity;
+        $this->user_name         = $user_name;
+        $this->user_email        = $user_email;
+        $this->user_mobile       = $user_mobile;
         $this->operator_identity = $operator_identity;
         $this->operator_name     = $operator_name;
         $this->operator_email    = $operator_email;
         $this->operator_mobile   = $operator_mobile;
-        $this->id            = $id;
+        $this->id                = $id;
     }
 
     public function getId(): ?int

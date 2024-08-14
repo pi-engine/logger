@@ -39,7 +39,7 @@ class InventoryReadHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $requestBody = $request->getParsedBody();
-        $result      = $this->loggerService->readInventoryLog($requestBody);
+        $result      = $this->loggerService->getSystemLog($requestBody);
         return new JsonResponse($result);
     }
 }

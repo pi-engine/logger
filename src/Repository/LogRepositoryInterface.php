@@ -6,13 +6,15 @@ use Laminas\Db\ResultSet\HydratingResultSet;
 
 interface LogRepositoryInterface
 {
-    public function addUser(array $params = []): void;
+    public function addUserLog(array $params = []): void;
 
-    public function getUserList(array $params = []): HydratingResultSet|array;
+    public function getUserLogList(array $params = []): HydratingResultSet|array;
 
-    public function getUserCount(array $params = []): int;
+    public function getUserLogCount(array $params = []): int;
 
-    public function readInventoryLog(array $params = []): HydratingResultSet|array;
+    public function getSystemLogList(array $params = []): HydratingResultSet|array;
 
-    public function cleanup(int $limitation = 1000): void;
+    public function getSystemLogCount(array $params = []): int;
+
+    public function cleanupSystemLog(int $limitation = 1000): void;
 }

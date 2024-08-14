@@ -41,7 +41,7 @@ class LogRepository implements LogRepositoryInterface
         $this->userPrototype      = $userPrototype;
     }
 
-    public function addUser(array $params = []): void
+    public function addUserLog(array $params = []): void
     {
         $insert = new Insert($this->tableUser);
         $insert->values($params);
@@ -57,41 +57,40 @@ class LogRepository implements LogRepositoryInterface
         }
     }
 
-    public function getUserList(array $params = []): HydratingResultSet|array
+    public function getUserLogList(array $params = []): HydratingResultSet|array
     {
         $where = [];
+        if (isset($params['identity']) & !empty($params['identity'])) {
+            $where['account.identity like ?'] = '%' . $params['identity'] . '%';
+        }
+        if (isset($params['name']) & !empty($params['name'])) {
+            $where['account.name like ?'] = '%' . $params['name'] . '%';
+        }
+        if (isset($params['email']) & !empty($params['email'])) {
+            $where['account.email like ?'] = '%' . $params['email'] . '%';
+        }
+        if (isset($params['mobile']) & !empty($params['mobile'])) {
+            $where['account.mobile like ?'] = '%' . $params['mobile'] . '%';
+        }
         if (isset($params['user_id']) && !empty($params['user_id'])) {
             $where['log.user_id'] = $params['user_id'];
+        }
+        if (isset($params['operator_id']) && !empty($params['operator_id'])) {
+            $where['log.operator_id'] = $params['operator_id'];
         }
         if (isset($params['state']) && !empty($params['state'])) {
             $where['log.state'] = $params['state'];
         }
-        if (isset($params['mobile']) && !empty($params['mobile'])) {
-            $where['account.mobile like ?'] = '%' . $params['mobile'] . '%';
-        }
-        if (isset($params['email']) && !empty($params['email'])) {
-            $where['account.email like ?'] = '%' . $params['email'] . '%';
-        }
-        if (isset($params['name']) && !empty($params['name'])) {
-            $where['account.name like ?'] = '%' . $params['name'] . '%';
-        }
-        if (isset($params['method']) && !empty($params['method'])) {
-            $where[' 1>0 AND log.information LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
-        }
-        if (isset($params['ip']) && !empty($params['ip'])) {
-            $where['2>1 AND log.information LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
-        }
-        if (isset($params['role']) && !empty($params['role'])) {
-            $where[' 3>2 AND log.information LIKE ?'] = '%"' . $params['role'] . '"%';
-        }
-        if (isset($params['identity']) && !empty($params['identity'])) {
-            $where[' 4>3 AND log.information LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
-        }
         if (!empty($params['data_from'])) {
-            $where['time_create >= ?'] = $params['data_from'];
+            $where['log.time_create >= ?'] = $params['data_from'];
         }
         if (!empty($params['data_to'])) {
-            $where['time_create <= ?'] = $params['data_to'];
+            $where['log.time_create <= ?'] = $params['data_to'];
+        }
+        if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
+            foreach ($params['information'] as $key => $value) {
+                $where[] = new Expression(sprintf("JSON_EXTRACT(log.information, '$.%s') = '%s'", $key, $value));
+            }
         }
 
         $sql    = new Sql($this->db);
@@ -122,43 +121,42 @@ class LogRepository implements LogRepositoryInterface
         return $resultSet;
     }
 
-    public function getUserCount(array $params = []): int
+    public function getUserLogCount(array $params = []): int
     {
         // Set where
         $columns = ['count' => new Expression('count(*)')];
-        $where   = [];
+        $where = [];
+        if (isset($params['identity']) & !empty($params['identity'])) {
+            $where['account.identity like ?'] = '%' . $params['identity'] . '%';
+        }
+        if (isset($params['name']) & !empty($params['name'])) {
+            $where['account.name like ?'] = '%' . $params['name'] . '%';
+        }
+        if (isset($params['email']) & !empty($params['email'])) {
+            $where['account.email like ?'] = '%' . $params['email'] . '%';
+        }
+        if (isset($params['mobile']) & !empty($params['mobile'])) {
+            $where['account.mobile like ?'] = '%' . $params['mobile'] . '%';
+        }
         if (isset($params['user_id']) && !empty($params['user_id'])) {
             $where['log.user_id'] = $params['user_id'];
+        }
+        if (isset($params['operator_id']) && !empty($params['operator_id'])) {
+            $where['log.operator_id'] = $params['operator_id'];
         }
         if (isset($params['state']) && !empty($params['state'])) {
             $where['log.state'] = $params['state'];
         }
-        if (isset($params['mobile']) && !empty($params['mobile'])) {
-            $where['account.mobile like ?'] = '%' . $params['mobile'] . '%';
-        }
-        if (isset($params['email']) && !empty($params['email'])) {
-            $where['account.email like ?'] = '%' . $params['email'] . '%';
-        }
-        if (isset($params['name']) && !empty($params['name'])) {
-            $where['account.name like ?'] = '%' . $params['name'] . '%';
-        }
-        if (isset($params['method']) && !empty($params['method'])) {
-            $where['1>0 AND log.information LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
-        }
-        if (isset($params['ip']) && !empty($params['ip'])) {
-            $where['2>1 AND log.information LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
-        }
-        if (isset($params['role']) && !empty($params['role'])) {
-            $where['3>2 AND log.information LIKE ?'] = '%"' . $params['role'] . '"%';
-        }
-        if (isset($params['identity']) && !empty($params['identity'])) {
-            $where['4>3 AND log.information LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
-        }
         if (!empty($params['data_from'])) {
-            $where['time_create >= ?'] = $params['data_from'];
+            $where['log.time_create >= ?'] = $params['data_from'];
         }
         if (!empty($params['data_to'])) {
-            $where['time_create <= ?'] = $params['data_to'];
+            $where['log.time_create <= ?'] = $params['data_to'];
+        }
+        if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
+            foreach ($params['information'] as $key => $value) {
+                $where[] = new Expression(sprintf("JSON_EXTRACT(log.information, '$.%s') = '%s'", $key, $value));
+            }
         }
 
         $sql    = new Sql($this->db);
@@ -176,26 +174,62 @@ class LogRepository implements LogRepositoryInterface
         return (int)$row['count'];
     }
 
-    public function readInventoryLog(array $params = []): HydratingResultSet|array
+    public function getSystemLogList(array $params = []): HydratingResultSet|array
     {
-        $where = $this->createConditional($params);
-        ///The name of this parameter is different in the database [log_user , log_inventory] and should not be in the createCondition
+        $where   = [];
+        if (isset($params['identity']) & !empty($params['identity'])) {
+            $where['account.identity like ?'] = '%' . $params['identity'] . '%';
+        }
+        if (isset($params['name']) & !empty($params['name'])) {
+            $where['account.name like ?'] = '%' . $params['name'] . '%';
+        }
+        if (isset($params['email']) & !empty($params['email'])) {
+            $where['account.email like ?'] = '%' . $params['email'] . '%';
+        }
+        if (isset($params['mobile']) & !empty($params['mobile'])) {
+            $where['account.mobile like ?'] = '%' . $params['mobile'] . '%';
+        }
+        if (isset($params['priority']) & !empty($params['priority'])) {
+            $where['log.priority'] = $params['priority'];
+        }
+        if (isset($params['priorityName']) & !empty($params['priorityName'])) {
+            $where['log.priorityName like ?'] = '%' . $params['priorityName'] . '%';
+        }
+        if (isset($params['message']) & !empty($params['message'])) {
+            $where['log.message like ?'] = '%' . $params['message'] . '%';
+        }
         if (isset($params['user_id']) & !empty($params['user_id'])) {
-            $where['extra_user_id'] = $params['user_id'];
+            $where['log.extra_user_id'] = $params['user_id'];
         }
         if (isset($params['company_id']) & !empty($params['company_id'])) {
-            $where['extra_company_id'] = $params['company_id'];
+            $where['log.extra_company_id'] = $params['company_id'];
         }
         if (!empty($params['data_from'])) {
-            $where['extra_time_create >= ?'] = $params['data_from'];
+            $where['log.extra_time_create >= ?'] = $params['data_from'];
         }
         if (!empty($params['data_to'])) {
-            $where['extra_time_create <= ?'] = $params['data_to'];
+            $where['log.extra_time_create <= ?'] = $params['data_to'];
+        }
+        if (isset($params['extra_data']) && !empty($params['extra_data']) && is_array($params['extra_data'])) {
+            foreach ($params['extra_data'] as $key => $value) {
+                $where[] = new Expression(sprintf("JSON_EXTRACT(log.extra_data, '$.%s') = '%s'", $key, $value));
+            }
         }
 
-        $order     = $params['order'] ?? ['timestamp DESC', 'id DESC'];
-        $sql       = new Sql($this->db);
-        $select    = $sql->select($this->tableLog)->where($where)->order($order)->offset($params['offset'])->limit($params['limit']);
+        $sql    = new Sql($this->db);
+        $from   = ['log' => $this->tableLog];
+        $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
+        $select->join(
+            ['account' => $this->tableAccount],
+            'log.extra_user_id=account.id',
+            [
+                'user_identity' => 'identity',
+                'user_name'     => 'name',
+                'user_email'    => 'email',
+                'user_mobile'   => 'mobile',
+            ],
+            $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
+        );
         $statement = $sql->prepareStatementForSqlObject($select);
         $result    = $statement->execute();
 
@@ -205,74 +239,68 @@ class LogRepository implements LogRepositoryInterface
 
         $resultSet = new HydratingResultSet($this->hydrator, $this->inventoryPrototype);
         $resultSet->initialize($result);
+
         return $resultSet;
     }
 
-    public function getInventoryLogCount(array $params = []): int
+    public function getSystemLogCount(array $params = []): int
     {
         $columns = ['count' => new Expression('count(*)')];
-        $where   = $this->createConditional($params);
-        ///The name of this parameter is different in the database [log_user , log_inventory] and should not be in the createCondition
+        $where   = [];
+        if (isset($params['identity']) & !empty($params['identity'])) {
+            $where['account.identity like ?'] = '%' . $params['identity'] . '%';
+        }
+        if (isset($params['name']) & !empty($params['name'])) {
+            $where['account.name like ?'] = '%' . $params['name'] . '%';
+        }
+        if (isset($params['email']) & !empty($params['email'])) {
+            $where['account.email like ?'] = '%' . $params['email'] . '%';
+        }
+        if (isset($params['mobile']) & !empty($params['mobile'])) {
+            $where['account.mobile like ?'] = '%' . $params['mobile'] . '%';
+        }
+        if (isset($params['priority']) & !empty($params['priority'])) {
+            $where['log.priority'] = $params['priority'];
+        }
+        if (isset($params['priorityName']) & !empty($params['priorityName'])) {
+            $where['log.priorityName like ?'] = '%' . $params['priorityName'] . '%';
+        }
+        if (isset($params['message']) & !empty($params['message'])) {
+            $where['log.message like ?'] = '%' . $params['message'] . '%';
+        }
         if (isset($params['user_id']) & !empty($params['user_id'])) {
-            $where['extra_user_id'] = $params['user_id'];
+            $where['log.extra_user_id'] = $params['user_id'];
         }
         if (isset($params['company_id']) & !empty($params['company_id'])) {
-            $where['extra_company_id'] = $params['company_id'];
+            $where['log.extra_company_id'] = $params['company_id'];
         }
         if (!empty($params['data_from'])) {
-            $where['extra_time_create >= ?'] = $params['data_from'];
+            $where['log.extra_time_create >= ?'] = $params['data_from'];
         }
         if (!empty($params['data_to'])) {
-            $where['extra_time_create <= ?'] = $params['data_to'];
+            $where['log.extra_time_create <= ?'] = $params['data_to'];
         }
-        $sql       = new Sql($this->db);
-        $select    = $sql->select($this->tableLog)->columns($columns)->where($where);
+        if (isset($params['extra_data']) && !empty($params['extra_data']) && is_array($params['extra_data'])) {
+            foreach ($params['extra_data'] as $key => $value) {
+                $where[] = new Expression(sprintf("JSON_EXTRACT(log.extra_data, '$.%s') = '%s'", $key, $value));
+            }
+        }
+
+        $sql    = new Sql($this->db);
+        $from   = ['log' => $this->tableLog];
+        $select = $sql->select()->from($from)->columns($columns)->where($where);
+        $select->join(
+            ['account' => $this->tableAccount],
+            'log.extra_user_id=account.id',
+            [],
+            $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
+        );
         $statement = $sql->prepareStatementForSqlObject($select);
         $row       = $statement->execute()->current();
         return (int)$row['count'];
     }
 
-    private function createConditional(array $params): array
-    {
-        $where = [];
-        if (!empty($params['timestamp'])) {
-            $where['timestamp'] = $params['timestamp'];
-        }
-        if (!empty($params['priority'])) {
-            $where['priority like ?'] = '%' . $params['priority'] . '%';
-        }
-        if (!empty($params['priority_name'])) {
-            $where['priorityName like ?'] = '%' . $params['priority_name'] . '%';
-        }
-        if (!empty($params['message'])) {
-            $where['message like ?'] = '%' . $params['message'] . '%';
-        }
-        if (!empty($params['method'])) {
-            $where['1>0 AND extra_data LIKE ?'] = '%"REQUEST_METHOD": "%' . $params['method'] . '%';
-        }
-        if (!empty($params['email'])) {
-            $where['2>1 AND extra_data LIKE ?'] = '%"email": "%' . $params['email'] . '%';
-        }
-        if (!empty($params['name'])) {
-            $where['3>2 AND extra_data LIKE ?'] = '%"name": "%' . $params['name'] . '%';
-        }
-        if (!empty($params['ip'])) {
-            $where['4>3 AND extra_data LIKE ?'] = '%"REMOTE_ADDR": "%' . $params['ip'] . '%';
-        }
-        if (!empty($params['role'])) {
-            $where['5>4 AND extra_data LIKE ?'] = '%"' . $params['role'] . '"%';
-        }
-        if (!empty($params['identity'])) {
-            $where['6>5 AND extra_data LIKE ?'] = '%"identity": "%' . $params['identity'] . '%';
-        }
-        if (!empty($params['target'])) {
-            $where['7>6 AND extra_data LIKE ?'] = '%"target": "' . $params['target'] . '"%';
-        }
-
-        return $where;
-    }
-
-    public function cleanup(int $limitation = 10000): void
+    public function cleanupSystemLog(int $limitation = 10000): void
     {
         // Set columns
         $columns = ['count' => new Expression('count(*)')];

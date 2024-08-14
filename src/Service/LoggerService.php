@@ -33,6 +33,7 @@ class LoggerService implements ServiceInterface
         = [
             'credential',
             'credentialColumn',
+            'token',
             'access_token',
             'refresh_token',
             'token_payload',
@@ -170,17 +171,7 @@ class LoggerService implements ServiceInterface
     public function cleanUpMysql(): void
     {
         $limitation = $this->config['limitation'] ?? 10000;
-        $this->logRepository->cleanup($limitation);
-    }
-
-    // ToDo: Finish it
-    public function cleanUpMongo(): void
-    {
-    }
-
-    // ToDo: Finish it
-    public function cleanUpFile(): void
-    {
+        $this->logRepository->cleanupSystemLog($limitation);
     }
 
     public function cleanupForbiddenKeys(array $params): array
@@ -196,115 +187,89 @@ class LoggerService implements ServiceInterface
         return $params;
     }
 
-    public function readInventoryLog($params): array
-    {
-        $list          = [];
-        $listParams    = $this->paramsFraming($params);
-        $inventoryList = $this->logRepository->readInventoryLog($listParams);
-        foreach ($inventoryList as $object) {
-            $list[] = $this->canonizeInventoryLog($object);
-        }
-
-        // Get count
-        $count = $this->logRepository->getInventoryLogCount($listParams);
-
-        return [
-            'result' => true,
-            'data'   => [
-                'list'      => array_values($list),
-                'paginator' => [
-                    'count' => $count,
-                    'limit' => (int)$listParams['limit'],
-                    'page'  => (int)$listParams['page'],
-                ],
-                'filters'   => null,
-            ],
-            'error'  => [],
-        ];
-    }
-
-    public function addUserLog(string $state, array $params): void
-    {
-        $params = [
-            'user_id'     => (int)($params['account']['id'] ?? 0),
-            'operator_id' => (int)(isset($params['operator']) ? !empty($params['operator']) ? $params['operator']['id'] ?? 0 : 0 : 0),
-            'time_create' => time(),
-            'state'       => $state,
-            'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK),
-        ];
-
-        $this->logRepository->addUser($params);
-    }
-
-    public function getUserLog($params): array
+    public function getSystemLog($params): array
     {
         $limit  = (int)($params['limit'] ?? 25);
         $page   = (int)($params['page'] ?? 1);
-        $order  = $params['order'] ?? ['time_create DESC'];
+        $order  = $params['order'] ?? ['log.extra_time_create DESC', 'log.id DESC'];
         $offset = ($page - 1) * $limit;
 
+        // Set params
         $listParams = [
             'order'  => $order,
             'offset' => $offset,
             'limit'  => $limit,
+            'page'   => $page,
         ];
 
-        if (isset($params['state']) && !empty($params['state'])) {
-            $listParams['state'] = $params['state'];
-        }
-        if (isset($params['mobile']) && !empty($params['mobile'])) {
-            $listParams['mobile'] = $params['mobile'];
-        }
-        if (isset($params['email']) && !empty($params['email'])) {
-            $listParams['email'] = $params['email'];
+        if (isset($params['identity']) && !empty($params['identity'])) {
+            $listParams['identity'] = $params['identity'];
         }
         if (isset($params['name']) && !empty($params['name'])) {
             $listParams['name'] = $params['name'];
         }
-        if (isset($params['ip']) && !empty($params['ip'])) {
-            $listParams['ip'] = $params['ip'];
+        if (isset($params['email']) && !empty($params['email'])) {
+            $listParams['email'] = $params['email'];
         }
-        if (isset($params['method']) && !empty($params['method'])) {
-            $listParams['method'] = $params['method'];
+        if (isset($params['mobile']) && !empty($params['mobile'])) {
+            $listParams['mobile'] = $params['mobile'];
         }
-        if (isset($params['role']) && !empty($params['role'])) {
-            $listParams['role'] = $params['role'];
+        if (isset($params['priority']) && !empty($params['priority'])) {
+            $listParams['priority'] = $params['priority'];
         }
-        if (isset($params['identity']) && !empty($params['identity'])) {
-            $listParams['identity'] = $params['identity'];
+        if (isset($params['priorityName']) && !empty($params['priorityName'])) {
+            $listParams['priorityName'] = $params['priorityName'];
+        }
+        if (isset($params['message']) && !empty($params['message'])) {
+            $listParams['message'] = $params['message'];
         }
         if (isset($params['user_id']) && !empty($params['user_id'])) {
-            if (is_string($params['user_id']) && str_contains($params['user_id'], ',')) {
-                $listParams['user_id'] = explode(',', $params['user_id']);
-            } else {
-                $listParams['user_id'] = $params['user_id'];
-            }
+            $listParams['user_id'] = $params['user_id'];
+        }
+        if (isset($params['company_id']) && !empty($params['company_id'])) {
+            $listParams['company_id'] = $params['company_id'];
         }
         if (isset($params['data_from']) && !empty($params['data_from'])) {
-            $listParams['data_from'] = strtotime(
-                ($params['data_from']) != null
-                    ? sprintf('%s 00:00:00', $params['data_from'])
-                    : sprintf('%s 00:00:00', date('Y-m-d', strtotime('-1 month')))
-            );
+            $listParams['data_from'] = strtotime(sprintf('%s 00:00:00', $params['data_from']));
         }
-
         if (isset($params['data_to']) && !empty($params['data_to'])) {
-            $listParams['data_to'] = strtotime(
-                ($params['data_to']) != null
-                    ? sprintf('%s 00:00:00', $params['data_to'])
-                    : sprintf('%s 23:59:59', date('Y-m-d'))
-            );
+            $listParams['data_to'] = strtotime(sprintf('%s 00:00:00', $params['data_to']));
         }
 
-        // Get list
-        $list   = [];
-        $rowSet = $this->logRepository->getUserList($listParams);
-        foreach ($rowSet as $row) {
-            $list[] = $this->canonizeUserLog($row);
+        // Set for extra_data
+        if (isset($params['ip']) && !empty($params['ip'])) {
+            $listParams['extra_data']['ip'] = $params['ip'];
+        }
+        if (isset($params['method']) && !empty($params['method'])) {
+            $listParams['extra_data']['method'] = $params['method'];
+        }
+        if (isset($params['target']) && !empty($params['target'])) {
+            $listParams['extra_data']['target'] = $params['target'];
+        }
+        if (isset($params['module']) && !empty($params['module'])) {
+            $listParams['extra_data']['module'] = $params['module'];
+        }
+        if (isset($params['section']) && !empty($params['section'])) {
+            $listParams['extra_data']['section'] = $params['section'];
+        }
+        if (isset($params['package']) && !empty($params['package'])) {
+            $listParams['extra_data']['package'] = $params['package'];
+        }
+        if (isset($params['handler']) && !empty($params['handler'])) {
+            $listParams['extra_data']['handler'] = $params['handler'];
+        }
+        if (isset($params['permissions']) && !empty($params['permissions'])) {
+            $listParams['extra_data']['permissions'] = $params['permissions'];
+        }
+
+        $list          = [];
+        $systemList = $this->logRepository->getSystemLogList($listParams);
+        foreach ($systemList as $object) {
+            $list[] = $this->canonizeSystemLog($object);
         }
 
         // Get count
-        $count = $this->logRepository->getUserCount($listParams);
+        $count = $this->logRepository->getSystemLogCount($listParams);
 
         return [
             'result' => true,
@@ -320,73 +285,93 @@ class LoggerService implements ServiceInterface
         ];
     }
 
-    public function paramsFraming($params): array
+    public function addUserLog(string $state, array $params): void
+    {
+        $params = [
+            'user_id'     => (int)($params['account']['id'] ?? 0),
+            'operator_id' => (int)(isset($params['operator']) ? !empty($params['operator']) ? $params['operator']['id'] ?? 0 : 0 : 0),
+            'time_create' => time(),
+            'state'       => $state,
+            'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK),
+        ];
+
+        $this->logRepository->addUserLog($params);
+    }
+
+    public function getUserLog($params): array
     {
         $limit  = (int)($params['limit'] ?? 25);
         $page   = (int)($params['page'] ?? 1);
-        $order  = $params['order'] ?? ['timestamp DESC', 'id DESC'];
+        $order  = $params['order'] ?? ['time_create DESC'];
         $offset = ($page - 1) * $limit;
 
-        // Set params
         $listParams = [
             'order'  => $order,
             'offset' => $offset,
             'limit'  => $limit,
-            'page'   => $page,
         ];
 
-        if (isset($params['company_id']) && !empty($params['company_id'])) {
-            $listParams['company_id'] = $params['company_id'];
+        if (isset($params['identity']) && !empty($params['identity'])) {
+            $listParams['identity'] = $params['identity'];
+        }
+        if (isset($params['name']) && !empty($params['name'])) {
+            $listParams['name'] = $params['name'];
+        }
+        if (isset($params['email']) && !empty($params['email'])) {
+            $listParams['email'] = $params['email'];
+        }
+        if (isset($params['mobile']) && !empty($params['mobile'])) {
+            $listParams['mobile'] = $params['mobile'];
+        }
+        if (isset($params['user_id']) && !empty($params['user_id'])) {
+            $listParams['user_id'] = $params['user_id'];
+        }
+        if (isset($params['operator_id']) && !empty($params['operator_id'])) {
+            $listParams['operator_id'] = $params['operator_id'];
+        }
+        if (isset($params['state']) && !empty($params['state'])) {
+            $listParams['state'] = $params['state'];
+        }
+        if (isset($params['data_from']) && !empty($params['data_from'])) {
+            $listParams['data_from'] = strtotime(sprintf('%s 00:00:00', $params['data_from']));
+        }
+        if (isset($params['data_to']) && !empty($params['data_to'])) {
+            $listParams['data_to'] = strtotime(sprintf('%s 00:00:00', $params['data_to']));
         }
 
-        $paramNames = [
-            "ip",
-            "order",
-            "identity",
-            "role",
-            "target",
-            "name",
-            "email",
-            "module",
-            "section",
-            "identity",
-            "data_from",
-            "data_to",
-            "priority_name",
-            "method",
-            "user_id",
+        // Set for information
+        if (isset($params['ip']) && !empty($params['ip'])) {
+            $listParams['information']['ip'] = $params['ip'];
+        }
+        if (isset($params['method']) && !empty($params['method'])) {
+            $listParams['information']['method'] = $params['method'];
+        }
+
+        // Get list
+        $list   = [];
+        $rowSet = $this->logRepository->getUserLogList($listParams);
+        foreach ($rowSet as $row) {
+            $list[] = $this->canonizeUserLog($row);
+        }
+
+        // Get count
+        $count = $this->logRepository->getUserLogCount($listParams);
+
+        return [
+            'result' => true,
+            'data'   => [
+                'list'      => $list,
+                'paginator' => [
+                    'count' => $count,
+                    'limit' => $limit,
+                    'page'  => $page,
+                ],
+            ],
+            'error'  => [],
         ];
-
-        $nonEmptyParams = [];
-        foreach ($paramNames as $paramName) {
-            if (isset($params[$paramName]) && $params[$paramName] !== '') {
-                $nonEmptyParams[$paramName] = $params[$paramName];
-            }
-        }
-
-        if (isset($nonEmptyParams['user_id']) && !empty((int)$nonEmptyParams['user_id'])) {
-            $nonEmptyParams['user_id'] = explode(',', $nonEmptyParams['user_id']);
-        }
-
-        if (isset($nonEmptyParams['data_from']) && !empty($nonEmptyParams['data_from'])) {
-            $nonEmptyParams['data_from'] = strtotime(
-                ($params['data_from']) != null
-                    ? sprintf('%s 00:00:00', $params['data_from'])
-                    : sprintf('%s 00:00:00', date('Y-m-d', strtotime('-1 month')))
-            );
-        }
-
-        if (isset($nonEmptyParams['data_to']) && !empty($nonEmptyParams['data_to'])) {
-            $nonEmptyParams['data_to'] = strtotime(
-                ($nonEmptyParams['data_to']) != null
-                    ? sprintf('%s 00:00:00', $params['data_to'])
-                    : sprintf('%s 23:59:59', date('Y-m-d'))
-            );
-        }
-        return array_merge($listParams, $nonEmptyParams);
     }
 
-    public function canonizeInventoryLog($object): array
+    public function canonizeSystemLog($object): array
     {
         if (empty($object)) {
             return [];
@@ -403,6 +388,10 @@ class LoggerService implements ServiceInterface
                 'extra_time_create' => $object->getExtraTimeCreate(),
                 'extra_user_id'     => $object->getExtraUserId(),
                 'extra_company_id'  => $object->getExtraCompanyId(),
+                'user_identity'     => $object->getUserIdentity(),
+                'user_name'         => $object->getUserName(),
+                'user_email'        => $object->getUserEmail(),
+                'user_mobile'       => $object->getUserMobile(),
             ];
         } else {
             $object = [
@@ -415,45 +404,40 @@ class LoggerService implements ServiceInterface
                 'extra_time_create' => $object['extra_time_create'],
                 'extra_user_id'     => $object['extra_user_id'],
                 'extra_company_id'  => $object['extra_company_id'],
+                'user_identity'     => $object['user_identity'],
+                'user_name'         => $object['user_name'],
+                'user_email'        => $object['user_email'],
+                'user_mobile'       => $object['user_mobile'],
             ];
         }
 
-        // Set information
-        $information = !empty($object['extra_data']) ? json_decode($object['extra_data'], true) : [];
-        unset($object['extra_data']);
+        // Set time
+        $object['time_create_view'] = $this->utilityService->date($object['extra_time_create']);
 
-        // Set security report
-        $streamSecurity = null;
-        if (isset($information['request']['attributes']['security_stream']) && !empty($information['request']['attributes']['security_stream'])) {
-            foreach ($information['request']['attributes']['security_stream'] as $securityItem) {
-                $streamSecurity[] = [
-                    'name'   => $securityItem['name'],
-                    'status' => $securityItem['status'],
-                ];
-            }
-        }
+        // Set information
+        $object['extra_data'] = !empty($object['extra_data']) ? json_decode($object['extra_data'], true) : [];
 
         // Set output params
-        $object['time_create_view'] = $this->utilityService->date($object['extra_time_create']);
-        $object['user_id']          = $information['user_id'] ?? null;
-        $object['ip']               = $information['ip'] ?? null;
-        $object['title']            = $information['route']['title'] ?? null;
-        $object['method']           = $information['request']['method'] ?? null;
-        $object['target']           = $information['request']['target'] ?? null;
-        $object['section']          = $information['route']['section'] ?? null;
-        $object['module']           = $information['route']['module'] ?? null;
-        $object['package']          = $information['route']['package'] ?? null;
-        $object['handler']          = $information['route']['handler'] ?? null;
-        $object['name']             = $information['request']['attributes']['account']['name'] ?? null;
-        $object['email']            = $information['request']['attributes']['account']['email'] ?? null;
-        $object['identity']         = $information['request']['attributes']['account']['identity'] ?? null;
-        $object['mobile']           = $information['request']['attributes']['account']['mobile'] ?? null;
-        $object['company_id']       = $information['company_id'] ?? null;
-        $object['company_title']    = $information['request']['attributes']['company_authorization']['company']['title'] ?? null;
-        $object['package_id']       = $information['request']['attributes']['company_authorization']['package']['id'] ?? null;
-        $object['package_title']    = $information['request']['attributes']['company_authorization']['package']['title'] ?? null;
-        $object['request_body']     = $information['request']['parsedBody'] ?? null;
-        $object['security_stream']  = $streamSecurity;
+        $object['user_id']          = $object['extra_user_id'];
+        $object['company_id']       = $object['extra_company_id'];
+        $object['company_title']    = $object['extra_data']['request']['attributes']['company_authorization']['company']['title'] ?? null;
+        $object['ip']               = $object['extra_data']['ip'] ?? null;
+        $object['title']            = $object['extra_data']['route']['title'] ?? null;
+        $object['method']           = $object['extra_data']['request']['method'] ?? null;
+        $object['target']           = $object['extra_data']['request']['target'] ?? null;
+        $object['section']          = $object['extra_data']['route']['section'] ?? null;
+        $object['module']           = $object['extra_data']['route']['module'] ?? null;
+        $object['package']          = $object['extra_data']['route']['package'] ?? null;
+        $object['handler']          = $object['extra_data']['route']['handler'] ?? null;
+        $object['package_id']       = $object['extra_data']['request']['attributes']['company_authorization']['package']['id'] ?? null;
+        $object['package_title']    = $object['extra_data']['request']['attributes']['company_authorization']['package']['title'] ?? null;
+        $object['request_body']     = $object['extra_data']['request']['parsedBody'] ?? null;
+        $object['security_stream']  = $object['extra_data']['request']['attributes']['security_stream'] ?? null;
+
+        unset($object['extra_data']);
+        unset($object['extra_user_id']);
+        unset($object['extra_company_id']);
+        unset($object['timestamp']);
 
         return $object;
     }
@@ -466,31 +450,42 @@ class LoggerService implements ServiceInterface
 
         if (is_object($object)) {
             $object = [
-                'id'            => (int)$object->getId(),
-                'user_id'       => $object->getUserId(),
-                'user_identity' => $object->getUserIdentity(),
-                'user_name'     => $object->getUserName(),
-                'user_email'    => $object->getUserEmail(),
-                'user_mobile'   => $object->getUserMobile(),
-                'operator_id'   => $object->getOperatorId(),
-                'time_create'   => $object->getTimeCreate(),
-                'state'         => $object->getState(),
-                'information'   => $object->getInformation(),
+                'id'                => (int)$object->getId(),
+                'user_id'           => $object->getUserId(),
+                'user_identity'     => $object->getUserIdentity(),
+                'user_name'         => $object->getUserName(),
+                'user_email'        => $object->getUserEmail(),
+                'user_mobile'       => $object->getUserMobile(),
+                'operator_id'       => $object->getOperatorId(),
+                'operator_identity' => $object->getOperatorIdentity(),
+                'operator_name'     => $object->getOperatorName(),
+                'operator_email'    => $object->getOperatorEmail(),
+                'operator_mobile'   => $object->getOperatorMobile(),
+                'time_create'       => $object->getTimeCreate(),
+                'state'             => $object->getState(),
+                'information'       => $object->getInformation(),
             ];
         } else {
             $object = [
-                'id'            => (int)$object['id'],
-                'user_id'       => $object['user_id'],
-                'user_identity' => $object['user_identity'],
-                'user_name'     => $object['user_name'],
-                'user_email'    => $object['user_email'],
-                'user_mobile'   => $object['user_mobile'],
-                'operator_id'   => $object['operator_id'],
-                'time_create'   => $object['time_create'],
-                'state'         => $object['state'],
-                'information'   => $object['information'],
+                'id'                => (int)$object['id'],
+                'user_id'           => $object['user_id'],
+                'user_identity'     => $object['user_identity'],
+                'user_name'         => $object['user_name'],
+                'user_email'        => $object['user_email'],
+                'user_mobile'       => $object['user_mobile'],
+                'operator_id'       => $object['operator_id'],
+                'operator_identity' => $object['operator_identity'],
+                'operator_name'     => $object['operator_name'],
+                'operator_email'    => $object['operator_email'],
+                'operator_mobile'   => $object['operator_mobile'],
+                'time_create'       => $object['time_create'],
+                'state'             => $object['state'],
+                'information'       => $object['information'],
             ];
         }
+
+        // Set data
+        $object['time_create_view'] = $this->utilityService->date($object['time_create']);
 
         // Set information
         $object['information'] = json_decode($object['information'], true);
@@ -498,9 +493,6 @@ class LoggerService implements ServiceInterface
         // Unset not used data
         unset($object['information']['params']['serverParams']);
         unset($object['information']['request']['security_stream']);
-
-        // Set data
-        $object['time_create_view'] = $this->utilityService->date($object['time_create']);
 
         return $object;
     }
