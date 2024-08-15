@@ -15,13 +15,13 @@ return [
             Repository\LogRepositoryInterface::class => Repository\LogRepository::class,
         ],
         'factories' => [
-            Repository\LogRepository::class                     => Factory\Repository\LogRepositoryFactory::class,
-            Service\LoggerService::class                        => Factory\Service\LoggerServiceFactory::class,
-            Middleware\LoggerRequestMiddleware::class           => Factory\Middleware\LoggerRequestMiddlewareFactory::class,
-            Middleware\LoggerRequestResponseMiddleware::class   => Factory\Middleware\LoggerRequestResponseMiddlewareFactory::class,
-            Handler\InstallerHandler::class                     => Factory\Handler\InstallerHandlerFactory::class,
-            Handler\Admin\Inventory\InventoryReadHandler::class => Factory\Handler\Admin\Inventory\InventoryReadHandlerFactory::class,
-            Handler\Admin\User\UserReadHandler::class           => Factory\Handler\Admin\User\UserReadHandlerFactory::class,
+            Repository\LogRepository::class                   => Factory\Repository\LogRepositoryFactory::class,
+            Service\LoggerService::class                      => Factory\Service\LoggerServiceFactory::class,
+            Middleware\LoggerRequestMiddleware::class         => Factory\Middleware\LoggerRequestMiddlewareFactory::class,
+            Middleware\LoggerRequestResponseMiddleware::class => Factory\Middleware\LoggerRequestResponseMiddlewareFactory::class,
+            Handler\InstallerHandler::class                   => Factory\Handler\InstallerHandlerFactory::class,
+            Handler\Admin\System\ListHandler::class           => Factory\Handler\Admin\System\ListHandlerFactory::class,
+            Handler\Admin\User\ListHandler::class             => Factory\Handler\Admin\User\ListHandlerFactory::class,
         ],
     ],
     'router' => [
@@ -34,50 +34,31 @@ return [
                     'defaults' => [],
                 ],
                 'child_routes' => [
-                    'installer' => [
-                        'type'    => Literal::class,
-                        'options' => [
-                            'route'    => '/installer',
-                            'defaults' => [
-                                'module'     => 'erm',
-                                'section'    => 'admin',
-                                'package'    => 'installer',
-                                'handler'    => 'installer',
-                                'controller' => PipeSpec::class,
-                                'middleware' => new PipeSpec(
-                                    RequestPreparationMiddleware::class,
-                                    SecurityMiddleware::class,
-                                    AuthenticationMiddleware::class,
-                                    Handler\InstallerHandler::class
-                                ),
-                            ],
-                        ],
-                    ],
-                    'inventory' => [
+                    'system' => [
                         'type'         => Literal::class,
                         'options'      => [
-                            'route'    => '/inventory',
+                            'route'    => '/system',
                             'defaults' => [],
                         ],
                         'child_routes' => [
                             'read' => [
                                 'type'    => Literal::class,
                                 'options' => [
-                                    'route'    => '/read',
+                                    'route'    => '/list',
                                     'defaults' => [
                                         'title'      => 'Admin logger user read',
                                         'module'     => 'logger',
                                         'section'    => 'admin',
-                                        'package'    => 'inventory',
+                                        'package'    => 'system',
                                         'handler'    => 'read',
-                                        'permission' => 'admin-logger-inventory-read',
+                                        'permission' => 'admin-logger-system-list',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
                                             RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             AuthorizationMiddleware::class,
-                                            Handler\Admin\Inventory\InventoryReadHandler::class
+                                            Handler\Admin\System\ListHandler::class
                                         ),
                                     ],
                                 ],
@@ -94,24 +75,44 @@ return [
                             'read' => [
                                 'type'    => Literal::class,
                                 'options' => [
-                                    'route'    => '/read',
+                                    'route'    => '/list',
                                     'defaults' => [
-                                        'title'      => 'Admin logger inventory read',
+                                        'title'      => 'Admin logger user list',
                                         'module'     => 'logger',
                                         'section'    => 'admin',
                                         'package'    => 'user',
-                                        'handler'    => 'read',
-                                        'permission' => 'admin-logger-user-read',
+                                        'handler'    => 'list',
+                                        'permission' => 'admin-logger-user-list',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
                                             RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             AuthorizationMiddleware::class,
-                                            Handler\Admin\User\UserReadHandler::class
+                                            Handler\Admin\User\ListHandler::class
                                         ),
                                     ],
                                 ],
+                            ],
+                        ],
+                    ],
+                    // Admin installer
+                    'installer' => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/installer',
+                            'defaults' => [
+                                'module'     => 'logger',
+                                'section'    => 'admin',
+                                'package'    => 'installer',
+                                'handler'    => 'installer',
+                                'controller' => PipeSpec::class,
+                                'middleware' => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    Handler\InstallerHandler::class
+                                ),
                             ],
                         ],
                     ],

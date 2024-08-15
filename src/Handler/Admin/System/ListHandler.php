@@ -1,6 +1,6 @@
 <?php
 
-namespace Logger\Handler\Admin\User;
+namespace Logger\Handler\Admin\System;
 
 use Laminas\Diactoros\Response\JsonResponse;
 use Logger\Service\LoggerService;
@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class UserReadHandler implements RequestHandlerInterface
+class ListHandler implements RequestHandlerInterface
 {
     /** @var ResponseFactoryInterface */
     protected ResponseFactoryInterface $responseFactory;
@@ -39,7 +39,7 @@ class UserReadHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $requestBody = $request->getParsedBody();
-        $result      = $this->loggerService->getUserLog($requestBody);
+        $result      = $this->loggerService->getSystemLog($requestBody);
         return new JsonResponse($result);
     }
 }

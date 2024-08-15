@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `log_inventory`
+CREATE TABLE IF NOT EXISTS `logger_system`
 (
     `id`                INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     `timestamp`         VARCHAR(255)     NOT NULL DEFAULT '',
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `log_inventory`
     PRIMARY KEY (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `log_user`
+CREATE TABLE IF NOT EXISTS `logger_user`
 (
     `id`          INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id`     INT(10) UNSIGNED NOT NULL DEFAULT '0',

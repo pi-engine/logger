@@ -27,7 +27,7 @@ class LoggerService implements ServiceInterface
     protected int $priority = Logger::INFO;
 
     /* @var string */
-    protected string $tableLog = 'log_inventory';
+    protected string $tableLog = 'logger_system';
 
     protected array $forbiddenParams
         = [

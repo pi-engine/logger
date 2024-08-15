@@ -1,9 +1,9 @@
 <?php
 
-namespace Logger\Factory\Handler\Admin\User;
+namespace Logger\Factory\Handler\Admin\System;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Logger\Handler\Admin\User\UserReadHandler;
+use Logger\Handler\Admin\System\ListHandler;
 use Logger\Service\LoggerService;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -11,20 +11,20 @@ use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
-class UserReadHandlerFactory implements FactoryInterface
+class ListHandlerFactory implements FactoryInterface
 {
     /**
      * @param ContainerInterface $container
      * @param string             $requestedName
      * @param array|null         $options
      *
-     * @return UserReadHandler
+     * @return ListHandler
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): UserReadHandler
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): ListHandler
     {
-        return new UserReadHandler(
+        return new ListHandler(
             $container->get(ResponseFactoryInterface::class),
             $container->get(StreamFactoryInterface::class),
             $container->get(LoggerService::class)

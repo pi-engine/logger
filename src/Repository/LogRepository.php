@@ -9,21 +9,21 @@ use Laminas\Db\Sql\Insert;
 use Laminas\Db\Sql\Predicate\Expression;
 use Laminas\Db\Sql\Sql;
 use Laminas\Hydrator\HydratorInterface;
-use Logger\Model\Inventory;
+use Logger\Model\System;
 use Logger\Model\User;
 use RuntimeException;
 
 class LogRepository implements LogRepositoryInterface
 {
-    private string $tableLog = 'log_inventory';
+    private string $tableSystem = 'logger_system';
 
-    private string $tableUser = 'log_user';
+    private string $tableUser = 'logger_user';
 
     private string $tableAccount = 'user_account';
 
     private AdapterInterface $db;
 
-    private Inventory $inventoryPrototype;
+    private System $systemPrototype;
 
     private User $userPrototype;
 
@@ -32,12 +32,12 @@ class LogRepository implements LogRepositoryInterface
     public function __construct(
         AdapterInterface $db,
         HydratorInterface $hydrator,
-        Inventory $inventoryPrototype,
+        System $systemPrototype,
         User $userPrototype,
     ) {
         $this->db                 = $db;
         $this->hydrator           = $hydrator;
-        $this->inventoryPrototype = $inventoryPrototype;
+        $this->systemPrototype = $systemPrototype;
         $this->userPrototype      = $userPrototype;
     }
 
@@ -217,7 +217,7 @@ class LogRepository implements LogRepositoryInterface
         }
 
         $sql    = new Sql($this->db);
-        $from   = ['log' => $this->tableLog];
+        $from   = ['log' => $this->tableSystem];
         $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
         $select->join(
             ['account' => $this->tableAccount],
@@ -237,7 +237,7 @@ class LogRepository implements LogRepositoryInterface
             return [];
         }
 
-        $resultSet = new HydratingResultSet($this->hydrator, $this->inventoryPrototype);
+        $resultSet = new HydratingResultSet($this->hydrator, $this->systemPrototype);
         $resultSet->initialize($result);
 
         return $resultSet;
@@ -287,7 +287,7 @@ class LogRepository implements LogRepositoryInterface
         }
 
         $sql    = new Sql($this->db);
-        $from   = ['log' => $this->tableLog];
+        $from   = ['log' => $this->tableSystem];
         $select = $sql->select()->from($from)->columns($columns)->where($where);
         $select->join(
             ['account' => $this->tableAccount],
@@ -307,7 +307,7 @@ class LogRepository implements LogRepositoryInterface
 
         // Get count
         $sql       = new Sql($this->db);
-        $select    = $sql->select($this->tableLog)->columns($columns);
+        $select    = $sql->select($this->tableSystem)->columns($columns);
         $statement = $sql->prepareStatementForSqlObject($select);
         $row       = $statement->execute()->current();
         $count     = (int)$row['count'];
@@ -315,7 +315,7 @@ class LogRepository implements LogRepositoryInterface
         // Check count and delete
         if ($count > $limitation) {
             // Get first available id
-            $select    = $sql->select($this->tableLog)->columns(['id'])->order('id ASC')->limit(1);
+            $select    = $sql->select($this->tableSystem)->columns(['id'])->order('id ASC')->limit(1);
             $statement = $sql->prepareStatementForSqlObject($select);
             $row       = $statement->execute()->current();
 
@@ -323,7 +323,7 @@ class LogRepository implements LogRepositoryInterface
             if (isset($row['id']) && (int)$row['id'] > 0) {
                 // Do Delete
                 $where     = ['id' => (int)$row['id']];
-                $delete    = $sql->delete($this->tableLog)->where($where);
+                $delete    = $sql->delete($this->tableSystem)->where($where);
                 $statement = $sql->prepareStatementForSqlObject($delete);
                 $result    = $statement->execute();
 

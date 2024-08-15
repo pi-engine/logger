@@ -2,7 +2,7 @@
 
 namespace Logger\Model;
 
-class Inventory
+class System
 {
     private mixed  $id;
     private string $timestamp;
