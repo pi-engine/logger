@@ -2,7 +2,7 @@
 
 namespace Logger\Factory\Service;
 
-use Interop\Container\Containerinterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Logger\Repository\LogRepositoryInterface;
 use Logger\Service\LoggerService;

@@ -2,7 +2,7 @@
 
 namespace Logger\Factory\Middleware;
 
-use Interop\Container\Containerinterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Logger\Middleware\LoggerRequestMiddleware;
 use Logger\Service\LoggerService;

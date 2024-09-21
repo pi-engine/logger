@@ -2,7 +2,7 @@
 
 namespace Logger\Factory\Handler;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Logger\Handler\InstallerHandler;
 use Psr\Container\ContainerExceptionInterface;
