@@ -2,13 +2,13 @@
 
 namespace Logger\Factory\Middleware;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Logger\Middleware\LoggerRequestMiddleware;
 use Logger\Service\LoggerService;
+use Pi\Core\Handler\ErrorHandler;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use User\Handler\ErrorHandler;
 
 class LoggerRequestMiddlewareFactory implements FactoryInterface
 {

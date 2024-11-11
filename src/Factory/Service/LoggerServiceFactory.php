@@ -2,11 +2,11 @@
 
 namespace Logger\Factory\Service;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Logger\Repository\LogRepositoryInterface;
 use Logger\Service\LoggerService;
-use User\Service\UtilityService;
+use Pi\Core\Service\UtilityService;
+use Psr\Container\ContainerInterface;
 
 class LoggerServiceFactory implements FactoryInterface
 {

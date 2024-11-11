@@ -3,13 +3,13 @@
 namespace Logger\Middleware;
 
 use Logger\Service\LoggerService;
+use Pi\Core\Handler\ErrorHandler;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use User\Handler\ErrorHandler;
 
 class LoggerRequestResponseMiddleware implements MiddlewareInterface
 {

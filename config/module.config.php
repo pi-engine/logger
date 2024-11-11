@@ -4,10 +4,10 @@ namespace Logger;
 
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
+use Pi\Core\Middleware\RequestPreparationMiddleware;
 use Pi\Core\Middleware\SecurityMiddleware;
 use User\Middleware\AuthenticationMiddleware;
 use User\Middleware\AuthorizationMiddleware;
-use User\Middleware\RequestPreparationMiddleware;
 
 return [
     'service_manager' => [

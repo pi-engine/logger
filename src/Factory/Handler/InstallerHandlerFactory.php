@@ -2,14 +2,14 @@
 
 namespace Logger\Factory\Handler;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Logger\Handler\InstallerHandler;
+use Pi\Core\Service\InstallerService;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use User\Service\InstallerService;
 
 class InstallerHandlerFactory implements FactoryInterface
 {

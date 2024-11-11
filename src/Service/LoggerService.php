@@ -10,7 +10,7 @@ use Laminas\Log\Writer\MongoDB;
 use Laminas\Log\Writer\Stream;
 use Logger\Repository\LogRepositoryInterface;
 use MongoDB\Driver\Manager;
-use User\Service\UtilityService;
+use Pi\Core\Service\UtilityService;
 
 class LoggerService implements ServiceInterface
 {
