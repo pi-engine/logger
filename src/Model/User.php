@@ -1,6 +1,6 @@
 <?php
 
-namespace Logger\Model;
+namespace Pi\Logger\Model;
 
 class User
 {

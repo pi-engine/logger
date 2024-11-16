@@ -1,6 +1,6 @@
 <?php
 
-namespace Logger\Repository;
+namespace Pi\Logger\Repository;
 
 use Laminas\Db\Adapter\AdapterInterface;
 use Laminas\Db\Adapter\Driver\ResultInterface;
@@ -9,8 +9,8 @@ use Laminas\Db\Sql\Insert;
 use Laminas\Db\Sql\Predicate\Expression;
 use Laminas\Db\Sql\Sql;
 use Laminas\Hydrator\HydratorInterface;
-use Logger\Model\System;
-use Logger\Model\User;
+use Pi\Logger\Model\System;
+use Pi\Logger\Model\User;
 use RuntimeException;
 
 class LogRepository implements LogRepositoryInterface

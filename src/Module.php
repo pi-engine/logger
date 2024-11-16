@@ -1,6 +1,6 @@
 <?php
 
-namespace Logger;
+namespace Pi\Logger;
 
 class Module
 {

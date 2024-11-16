@@ -1,9 +1,9 @@
 <?php
 
-namespace Logger\Handler\Admin\System;
+namespace Pi\Logger\Handler\Admin\System;
 
 use Laminas\Diactoros\Response\JsonResponse;
-use Logger\Service\LoggerService;
+use Pi\Logger\Service\LoggerService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

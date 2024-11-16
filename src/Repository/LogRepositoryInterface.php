@@ -1,6 +1,6 @@
 <?php
 
-namespace Logger\Repository;
+namespace Pi\Logger\Repository;
 
 use Laminas\Db\ResultSet\HydratingResultSet;
 

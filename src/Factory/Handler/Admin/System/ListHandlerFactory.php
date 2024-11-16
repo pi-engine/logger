@@ -1,10 +1,10 @@
 <?php
 
-namespace Logger\Factory\Handler\Admin\System;
+namespace Pi\Logger\Factory\Handler\Admin\System;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Logger\Handler\Admin\System\ListHandler;
-use Logger\Service\LoggerService;
+use Pi\Logger\Handler\Admin\System\ListHandler;
+use Pi\Logger\Service\LoggerService;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;

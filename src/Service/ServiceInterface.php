@@ -1,6 +1,6 @@
 <?php
 
-namespace Logger\Service;
+namespace Pi\Logger\Service;
 
 interface ServiceInterface
 {

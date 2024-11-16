@@ -1,11 +1,11 @@
 <?php
 
-namespace Logger\Factory\Middleware;
+namespace Pi\Logger\Factory\Middleware;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Logger\Middleware\LoggerRequestResponseMiddleware;
-use Logger\Service\LoggerService;
 use Pi\Core\Handler\ErrorHandler;
+use Pi\Logger\Middleware\LoggerRequestResponseMiddleware;
+use Pi\Logger\Service\LoggerService;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;

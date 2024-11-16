@@ -1,6 +1,6 @@
 <?php
 
-namespace Logger;
+namespace Pi\Logger;
 
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;

@@ -1,9 +1,9 @@
 <?php
 
-namespace Logger\Middleware;
+namespace Pi\Logger\Middleware;
 
-use Logger\Service\LoggerService;
 use Pi\Core\Handler\ErrorHandler;
+use Pi\Logger\Service\LoggerService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

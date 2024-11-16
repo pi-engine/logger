@@ -1,14 +1,14 @@
 <?php
 
-namespace Logger\Factory\Repository;
+namespace Pi\Logger\Factory\Repository;
 
-use Psr\Container\ContainerInterface;
 use Laminas\Db\Adapter\AdapterInterface;
 use Laminas\Hydrator\ReflectionHydrator;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Logger\Model\System;
-use Logger\Model\User;
-use Logger\Repository\LogRepository;
+use Pi\Logger\Model\System;
+use Pi\Logger\Model\User;
+use Pi\Logger\Repository\LogRepository;
+use Psr\Container\ContainerInterface;
 
 class LogRepositoryFactory implements FactoryInterface
 {

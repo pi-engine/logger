@@ -1,6 +1,6 @@
 <?php
 
-namespace Logger\Service;
+namespace Pi\Logger\Service;
 
 use Laminas\Db\Adapter\Adapter;
 use Laminas\Log\Formatter\Json;
@@ -8,9 +8,9 @@ use Laminas\Log\Logger;
 use Laminas\Log\Writer\Db;
 use Laminas\Log\Writer\MongoDB;
 use Laminas\Log\Writer\Stream;
-use Logger\Repository\LogRepositoryInterface;
 use MongoDB\Driver\Manager;
 use Pi\Core\Service\UtilityService;
+use Pi\Logger\Repository\LogRepositoryInterface;
 
 class LoggerService implements ServiceInterface
 {

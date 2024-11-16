@@ -1,11 +1,11 @@
 <?php
 
-namespace Logger\Factory\Service;
+namespace Pi\Logger\Factory\Service;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Logger\Repository\LogRepositoryInterface;
-use Logger\Service\LoggerService;
 use Pi\Core\Service\UtilityService;
+use Pi\Logger\Repository\LogRepositoryInterface;
+use Pi\Logger\Service\LoggerService;
 use Psr\Container\ContainerInterface;
 
 class LoggerServiceFactory implements FactoryInterface
