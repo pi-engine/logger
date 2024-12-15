@@ -2,7 +2,7 @@
 
 namespace Pi\Logger\Handler\Admin\System;
 
-use Laminas\Diactoros\Response\JsonResponse;
+use Pi\Core\Response\EscapingJsonResponse;
 use Pi\Logger\Service\LoggerService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -40,6 +40,6 @@ class ListHandler implements RequestHandlerInterface
     {
         $requestBody = $request->getParsedBody();
         $result      = $this->loggerService->getSystemLog($requestBody);
-        return new JsonResponse($result);
+        return new EscapingJsonResponse($result);
     }
 }
