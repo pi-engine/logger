@@ -241,25 +241,25 @@ class LoggerService implements ServiceInterface
             $listParams['extra_data']['ip'] = $params['ip'];
         }
         if (isset($params['method']) && !empty($params['method'])) {
-            $listParams['extra_data']['method'] = $params['method'];
+            $listParams['extra_data']['request.method'] = $params['method'];
         }
         if (isset($params['target']) && !empty($params['target'])) {
-            $listParams['extra_data']['target'] = $params['target'];
+            $listParams['extra_data']['request.target'] = $params['target'];
         }
         if (isset($params['module']) && !empty($params['module'])) {
-            $listParams['extra_data']['module'] = $params['module'];
+            $listParams['extra_data']['route.module'] = $params['module'];
         }
         if (isset($params['section']) && !empty($params['section'])) {
-            $listParams['extra_data']['section'] = $params['section'];
+            $listParams['extra_data']['route.section'] = $params['section'];
         }
         if (isset($params['package']) && !empty($params['package'])) {
-            $listParams['extra_data']['package'] = $params['package'];
+            $listParams['extra_data']['route.package'] = $params['package'];
         }
         if (isset($params['handler']) && !empty($params['handler'])) {
-            $listParams['extra_data']['handler'] = $params['handler'];
+            $listParams['extra_data']['route.handler'] = $params['handler'];
         }
         if (isset($params['permissions']) && !empty($params['permissions'])) {
-            $listParams['extra_data']['permissions'] = $params['permissions'];
+            $listParams['extra_data']['route.permissions'] = $params['permissions'];
         }
 
         $list          = [];
