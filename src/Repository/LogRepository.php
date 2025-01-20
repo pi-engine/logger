@@ -30,15 +30,15 @@ class LogRepository implements LogRepositoryInterface
     private HydratorInterface $hydrator;
 
     public function __construct(
-        AdapterInterface $db,
+        AdapterInterface  $db,
         HydratorInterface $hydrator,
-        System $systemPrototype,
-        User $userPrototype,
+        System            $systemPrototype,
+        User              $userPrototype,
     ) {
-        $this->db                 = $db;
-        $this->hydrator           = $hydrator;
+        $this->db              = $db;
+        $this->hydrator        = $hydrator;
         $this->systemPrototype = $systemPrototype;
-        $this->userPrototype      = $userPrototype;
+        $this->userPrototype   = $userPrototype;
     }
 
     public function addUserLog(array $params = []): void
@@ -125,7 +125,7 @@ class LogRepository implements LogRepositoryInterface
     {
         // Set where
         $columns = ['count' => new Expression('count(*)')];
-        $where = [];
+        $where   = [];
         if (isset($params['identity']) & !empty($params['identity'])) {
             $where['account.identity like ?'] = '%' . $params['identity'] . '%';
         }
@@ -174,9 +174,25 @@ class LogRepository implements LogRepositoryInterface
         return (int)$row['count'];
     }
 
+    public function addSystemLog(array $params = []): void
+    {
+        $insert = new Insert($this->tableSystem);
+        $insert->values($params);
+
+        $sql       = new Sql($this->db);
+        $statement = $sql->prepareStatementForSqlObject($insert);
+        $result    = $statement->execute();
+
+        if (!$result instanceof ResultInterface) {
+            throw new RuntimeException(
+                'Database error occurred during blog post insert operation'
+            );
+        }
+    }
+
     public function getSystemLogList(array $params = []): HydratingResultSet|array
     {
-        $where   = [];
+        $where = [];
         if (isset($params['identity']) & !empty($params['identity'])) {
             $where['account.identity like ?'] = '%' . $params['identity'] . '%';
         }
@@ -192,27 +208,27 @@ class LogRepository implements LogRepositoryInterface
         if (isset($params['priority']) & !empty($params['priority'])) {
             $where['log.priority'] = $params['priority'];
         }
-        if (isset($params['priorityName']) & !empty($params['priorityName'])) {
-            $where['log.priorityName like ?'] = '%' . $params['priorityName'] . '%';
+        if (isset($params['level']) & !empty($params['level'])) {
+            $where['log.level like ?'] = '%' . $params['level'] . '%';
         }
         if (isset($params['message']) & !empty($params['message'])) {
             $where['log.message like ?'] = '%' . $params['message'] . '%';
         }
         if (isset($params['user_id']) & !empty($params['user_id'])) {
-            $where['log.extra_user_id'] = $params['user_id'];
+            $where['log.user_id'] = $params['user_id'];
         }
         if (isset($params['company_id']) & !empty($params['company_id'])) {
-            $where['log.extra_company_id'] = $params['company_id'];
+            $where['log.company_id'] = $params['company_id'];
         }
         if (!empty($params['data_from'])) {
-            $where['log.extra_time_create >= ?'] = $params['data_from'];
+            $where['log.time_create >= ?'] = $params['data_from'];
         }
         if (!empty($params['data_to'])) {
-            $where['log.extra_time_create <= ?'] = $params['data_to'];
+            $where['log.time_create <= ?'] = $params['data_to'];
         }
-        if (isset($params['extra_data']) && !empty($params['extra_data']) && is_array($params['extra_data'])) {
-            foreach ($params['extra_data'] as $key => $value) {
-                $where[] = new Expression(sprintf("JSON_EXTRACT(log.extra_data, '$.%s') = '%s'", $key, $value));
+        if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
+            foreach ($params['information'] as $key => $value) {
+                $where[] = new Expression(sprintf("JSON_EXTRACT(log.information, '$.%s') = '%s'", $key, $value));
             }
         }
 
@@ -221,7 +237,7 @@ class LogRepository implements LogRepositoryInterface
         $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
         $select->join(
             ['account' => $this->tableAccount],
-            'log.extra_user_id=account.id',
+            'log.user_id=account.id',
             [
                 'user_identity' => 'identity',
                 'user_name'     => 'name',
@@ -262,27 +278,27 @@ class LogRepository implements LogRepositoryInterface
         if (isset($params['priority']) & !empty($params['priority'])) {
             $where['log.priority'] = $params['priority'];
         }
-        if (isset($params['priorityName']) & !empty($params['priorityName'])) {
-            $where['log.priorityName like ?'] = '%' . $params['priorityName'] . '%';
+        if (isset($params['level']) & !empty($params['level'])) {
+            $where['log.level like ?'] = '%' . $params['level'] . '%';
         }
         if (isset($params['message']) & !empty($params['message'])) {
             $where['log.message like ?'] = '%' . $params['message'] . '%';
         }
         if (isset($params['user_id']) & !empty($params['user_id'])) {
-            $where['log.extra_user_id'] = $params['user_id'];
+            $where['log.user_id'] = $params['user_id'];
         }
         if (isset($params['company_id']) & !empty($params['company_id'])) {
-            $where['log.extra_company_id'] = $params['company_id'];
+            $where['log.company_id'] = $params['company_id'];
         }
         if (!empty($params['data_from'])) {
-            $where['log.extra_time_create >= ?'] = $params['data_from'];
+            $where['log.time_create >= ?'] = $params['data_from'];
         }
         if (!empty($params['data_to'])) {
-            $where['log.extra_time_create <= ?'] = $params['data_to'];
+            $where['log.time_create <= ?'] = $params['data_to'];
         }
-        if (isset($params['extra_data']) && !empty($params['extra_data']) && is_array($params['extra_data'])) {
-            foreach ($params['extra_data'] as $key => $value) {
-                $where[] = new Expression(sprintf("JSON_EXTRACT(log.extra_data, '$.%s') = '%s'", $key, $value));
+        if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
+            foreach ($params['information'] as $key => $value) {
+                $where[] = new Expression(sprintf("JSON_EXTRACT(log.information, '$.%s') = '%s'", $key, $value));
             }
         }
 
@@ -291,7 +307,7 @@ class LogRepository implements LogRepositoryInterface
         $select = $sql->select()->from($from)->columns($columns)->where($where);
         $select->join(
             ['account' => $this->tableAccount],
-            'log.extra_user_id=account.id',
+            'log.user_id=account.id',
             [],
             $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
         );

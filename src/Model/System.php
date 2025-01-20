@@ -5,28 +5,30 @@ namespace Pi\Logger\Model;
 class System
 {
     private mixed  $id;
-    private string $timestamp;
-    private int    $priority;
-    private string $priorityName;
+    private string $path;
     private string $message;
-    private int    $extra_user_id;
-    private int    $extra_company_id;
-    private int    $extra_time_create;
-    private string $extra_data;
+    private int    $priority;
+    private string $level;
+    private int    $user_id;
+    private int    $company_id;
+    private string $timestamp;
+    private int    $time_create;
+    private string $information;
     private mixed  $user_identity;
     private mixed  $user_name;
     private mixed  $user_email;
     private mixed  $user_mobile;
 
     /**
-     * @param string      $timestamp
-     * @param int         $priority
-     * @param string      $priorityName
+     * @param string      $path
      * @param string      $message
-     * @param int         $extra_user_id
-     * @param int         $extra_company_id
-     * @param int         $extra_time_create
-     * @param string      $extra_data
+     * @param int         $priority
+     * @param string      $level
+     * @param int         $user_id
+     * @param int         $company_id
+     * @param string      $timestamp
+     * @param int         $time_create
+     * @param string      $information
      * @param string|null $user_identity
      * @param string|null $user_name
      * @param string|null $user_email
@@ -34,14 +36,15 @@ class System
      * @param mixed|null  $id
      */
     public function __construct(
-        string $timestamp,
-        int $priority,
-        string $priorityName,
+        string $path,
         string $message,
-        int $extra_user_id,
-        int $extra_company_id,
-        int $extra_time_create,
-        string $extra_data,
+        int $priority,
+        string $level,
+        int $user_id,
+        int $company_id,
+        string $timestamp,
+        int $time_create,
+        string $information,
         string $user_identity = null,
         string $user_name = null,
         string $user_email = null,
@@ -49,14 +52,15 @@ class System
         mixed $id = null
     ) {
         $this->id                = $id;
-        $this->timestamp         = $timestamp;
-        $this->priority          = $priority;
-        $this->priorityName      = $priorityName;
+        $this->path           = $path;
         $this->message           = $message;
-        $this->extra_user_id     = $extra_user_id;
-        $this->extra_time_create = $extra_time_create;
-        $this->extra_company_id  = $extra_company_id;
-        $this->extra_data        = $extra_data;
+        $this->priority          = $priority;
+        $this->level      = $level;
+        $this->user_id     = $user_id;
+        $this->company_id  = $company_id;
+        $this->timestamp         = $timestamp;
+        $this->time_create = $time_create;
+        $this->information        = $information;
         $this->user_identity     = $user_identity;
         $this->user_name         = $user_name;
         $this->user_email        = $user_email;
@@ -90,9 +94,9 @@ class System
     /**
      * @return string
      */
-    public function getPriorityName(): string
+    public function getLevel(): string
     {
-        return $this->priorityName;
+        return $this->level;
     }
 
     /**
@@ -104,35 +108,43 @@ class System
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getExtraUserId(): int
+    public function getPath(): string
     {
-        return $this->extra_user_id;
+        return $this->path;
     }
 
     /**
      * @return int
      */
-    public function getExtraTimeCreate(): int
+    public function getUserId(): int
     {
-        return $this->extra_time_create;
+        return $this->user_id;
     }
 
     /**
      * @return int
      */
-    public function getExtraCompanyId(): int
+    public function getTimeCreate(): int
     {
-        return $this->extra_company_id;
+        return $this->time_create;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCompanyId(): int
+    {
+        return $this->company_id;
     }
 
     /**
      * @return string
      */
-    public function getExtraData(): string
+    public function getInformation(): string
     {
-        return $this->extra_data;
+        return $this->information;
     }
 
     public function getUserIdentity(): ?string

@@ -5,10 +5,10 @@ return [
         'cleanup'    => false, // true or false
         'limitation' => 20,
         'storage'    => 'mysql', // mysql, mongodb, file, disable
-        'mongodb' => [
-            'database'    => 'XXX',
-            'collection'  => 'XXX',
-            'saveOptions' => [],
+        'mongodb'    => [
+            'uri'        => 'mongodb://localhost:27017',
+            'database'   => 'XXX',
+            'collection' => 'logger_system',
         ],
         'mysql'   => [
             'driver'         => 'Pdo',

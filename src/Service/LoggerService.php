@@ -2,13 +2,12 @@
 
 namespace Pi\Logger\Service;
 
-use Laminas\Db\Adapter\Adapter;
-use Laminas\Log\Formatter\Json;
-use Laminas\Log\Logger;
-use Laminas\Log\Writer\Db;
-use Laminas\Log\Writer\MongoDB;
-use Laminas\Log\Writer\Stream;
+use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Manager;
+use MongoDB\Driver\Query;
+use Monolog\Formatter\JsonFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Pi\Core\Service\UtilityService;
 use Pi\Logger\Repository\LogRepositoryInterface;
 
@@ -23,12 +22,6 @@ class LoggerService implements ServiceInterface
     /* @var array */
     protected array $config;
 
-    /* @var int */
-    protected int $priority = Logger::INFO;
-
-    /* @var string */
-    protected string $tableLog = 'logger_system';
-
     protected array $forbiddenParams
         = [
             'credential',
@@ -38,71 +31,38 @@ class LoggerService implements ServiceInterface
             'refresh_token',
             'token_payload',
             'permission',
+            'HTTP_TOKEN',
+            'Token',
         ];
 
     public function __construct(
         LogRepositoryInterface $logRepository,
-        UtilityService $utilityService,
-        $config
+        UtilityService         $utilityService,
+                               $config
     ) {
         $this->logRepository  = $logRepository;
         $this->utilityService = $utilityService;
         $this->config         = $config;
     }
 
-    public function setPriority($priority): void
-    {
-        switch ($priority) {
-            case 0:
-                $this->priority = Logger::EMERG;
-                break;
-            case 1:
-                $this->priority = Logger::ALERT;
-                break;
-            case 2:
-                $this->priority = Logger::CRIT;
-                break;
-            case 3:
-                $this->priority = Logger::ERR;
-                break;
-            case 4:
-                $this->priority = Logger::WARN;
-                break;
-            case 5:
-                $this->priority = Logger::NOTICE;
-                break;
-            case 6:
-                $this->priority = Logger::INFO;
-                break;
-            case 7:
-                $this->priority = Logger::DEBUG;
-                break;
-        }
-    }
-
-    public function write(string $message, array $params = [], int $priority = null): void
+    public function write(string $path, array $params = [], string $message = '', int $priority = 200): void
     {
         // Clean up
         $params = $this->cleanupForbiddenKeys($params);
-
-        // Set priority
-        if (is_numeric($priority)) {
-            $this->setPriority($priority);
-        }
 
         // Save log
         $storage = $this->config['storage'] ?? 'disable';
         switch ($storage) {
             case 'mysql':
-                $this->writeToMysql($message, $params);
+                $this->writeToMysql($path, $params, $message, $priority);
                 break;
 
             case 'mongodb':
-                $this->writeToMongo($message, $params);
+                $this->writeToMongo($path, $params, $message, $priority);
                 break;
 
             case 'file':
-                $this->writeToFile($message, $params);
+                $this->writeToFile($path, $params, $message, $priority);
                 break;
 
             case '':
@@ -112,24 +72,26 @@ class LoggerService implements ServiceInterface
         }
     }
 
-    public function writeToMysql(string $message, array $params): void
+    public function writeToMysql(string $path, array $params, string $message, int $priority): void
     {
         // Set data
-        $data = json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK);
+        $params = json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK);
 
-        // Set writer
-        $db     = new Adapter($this->config['mysql']);
-        $writer = new Db($db, $this->tableLog);
-
-        // Save log
-        $logger = new Logger();
-        $logger->addWriter($writer);
-        $logger->log(Logger::INFO, $message, [
-            'time_create' => time(),
+        // Set log params
+        $addParams = [
+            'path'        => $path,
+            'message'     => $message,
+            'priority'    => $priority,
+            'level'       => Logger::getLevelName($priority),
             'user_id'     => (int)$params['user_id'],
             'company_id'  => (int)$params['company_id'],
-            'data'        => $data,
-        ]);
+            'timestamp'   => $this->utilityService->getTime(),
+            'time_create' => time(),
+            'information' => $params,
+        ];
+
+        // Save log to local db
+        $this->logRepository->addSystemLog($addParams);
 
         // Check and cleanup
         if (isset($this->config['cleanup']) && (bool)$this->config['cleanup'] === true) {
@@ -137,61 +99,81 @@ class LoggerService implements ServiceInterface
         }
     }
 
-    public function writeToMongo(string $message, array $params): void
+    public function writeToMongo(string $path, array $params, string $message, int $priority): void
     {
-        $manager = new Manager($this->config['mongodb']['uri']);
-        $writer  = new MongoDB(
-            $manager,
-            $this->config['mongodb']['database'],
-            $this->config['mongodb']['collection']
-        );
+        // Set log params
+        $addParams = [
+            'path'        => $path,
+            'message'     => $message,
+            'priority'    => $priority,
+            'level'       => Logger::getLevelName($priority),
+            'user_id'     => (int)$params['user_id'],
+            'company_id'  => (int)$params['company_id'],
+            'timestamp'   => $this->utilityService->getTime(),
+            'time_create' => time(),
+            'information' => $params,
+        ];
 
         // Save log
-        $logger = new Logger();
-        $logger->addWriter($writer);
-        $logger->log($this->priority, $message, $params);
+        $bulk = new BulkWrite();
+        $bulk->insert($addParams);
+
+        $manager = new Manager($this->config['mongodb']['uri']);
+        $manager->executeBulkWrite("{$this->config['mongodb']['database']}.{$this->config['mongodb']['collection']}", $bulk);
     }
 
-    public function writeToFile(string $message, array $params): void
+    public function writeToFile(string $path, array $params, string $message, int $priority): void
     {
         // Set file path
-        $path = sprintf('%s/%s.log', $this->config['file']['path'], date($this->config['file']['date_format']));
+        $logFilePath = sprintf('%s/%s.json', $this->config['file']['path'], date($this->config['file']['date_format']));
 
-        // Set writer
-        $formatter = new Json();
-        $writer    = new Stream($path);
-        $writer->setFormatter($formatter);
+        // Create a new Logger instance
+        $logger = new Logger('logger_system');
 
-        // Save log
-        $logger = new Logger();
-        $logger->addWriter($writer);
-        $logger->log($this->priority, $message, $params);
-    }
+        // Create a StreamHandler
+        $streamHandler = new StreamHandler($logFilePath, $priority);
 
-    public function cleanUpMysql(): void
-    {
-        $limitation = $this->config['limitation'] ?? 10000;
-        $this->logRepository->cleanupSystemLog($limitation);
-    }
+        // Attach a JsonFormatter to the handler
+        $streamHandler->setFormatter(new JsonFormatter());
 
-    public function cleanupForbiddenKeys(array $params): array
-    {
-        foreach ($params as $key => $value) {
-            if (in_array($key, $this->forbiddenParams)) {
-                unset($params[$key]);
-            } elseif (is_array($value)) {
-                $params[$key] = $this->cleanupForbiddenKeys($value);
-            }
+        // Add the handler to the logger
+        $logger->pushHandler($streamHandler);
+
+        // Example log entries
+        $message = !empty($message) ? $message : $path;
+        if (in_array($priority, [400, 500, 550, 600])) {
+            $logger->error($message, $params);
+        } else {
+            $logger->info($message , $params);
         }
-
-        return $params;
     }
 
-    public function getSystemLog($params): array
+    public function read($params): array
+    {
+        // Save log
+        $storage = $this->config['storage'] ?? 'disable';
+        switch ($storage) {
+            case 'mysql':
+                return $this->readFromMysql($params);
+                break;
+
+            case 'mongodb':
+                return $this->readFromMongo($params);
+                break;
+
+            case '':
+            case 'disable':
+            default:
+                return [];
+                break;
+        }
+    }
+
+    public function readFromMysql($params): array
     {
         $limit  = (int)($params['limit'] ?? 25);
         $page   = (int)($params['page'] ?? 1);
-        $order  = $params['order'] ?? ['log.extra_time_create DESC', 'log.id DESC'];
+        $order  = $params['order'] ?? ['log.time_create DESC', 'log.id DESC'];
         $offset = ($page - 1) * $limit;
 
         // Set params
@@ -217,8 +199,8 @@ class LoggerService implements ServiceInterface
         if (isset($params['priority']) && !empty($params['priority'])) {
             $listParams['priority'] = $params['priority'];
         }
-        if (isset($params['priorityName']) && !empty($params['priorityName'])) {
-            $listParams['priorityName'] = $params['priorityName'];
+        if (isset($params['level']) && !empty($params['level'])) {
+            $listParams['level'] = $params['level'];
         }
         if (isset($params['message']) && !empty($params['message'])) {
             $listParams['message'] = $params['message'];
@@ -236,36 +218,36 @@ class LoggerService implements ServiceInterface
             $listParams['data_to'] = strtotime(sprintf('%s 00:00:00', $params['data_to']));
         }
 
-        // Set for extra_data
+        // Set for information
         if (isset($params['ip']) && !empty($params['ip'])) {
-            $listParams['extra_data']['ip'] = $params['ip'];
+            $listParams['information']['ip'] = $params['ip'];
         }
         if (isset($params['method']) && !empty($params['method'])) {
-            $listParams['extra_data']['request.method'] = $params['method'];
+            $listParams['information']['request.method'] = $params['method'];
         }
         if (isset($params['target']) && !empty($params['target'])) {
-            $listParams['extra_data']['request.target'] = $params['target'];
+            $listParams['information']['request.target'] = $params['target'];
         }
         if (isset($params['module']) && !empty($params['module'])) {
-            $listParams['extra_data']['route.module'] = $params['module'];
+            $listParams['information']['route.module'] = $params['module'];
         }
         if (isset($params['section']) && !empty($params['section'])) {
-            $listParams['extra_data']['route.section'] = $params['section'];
+            $listParams['information']['route.section'] = $params['section'];
         }
         if (isset($params['package']) && !empty($params['package'])) {
-            $listParams['extra_data']['route.package'] = $params['package'];
+            $listParams['information']['route.package'] = $params['package'];
         }
         if (isset($params['handler']) && !empty($params['handler'])) {
-            $listParams['extra_data']['route.handler'] = $params['handler'];
+            $listParams['information']['route.handler'] = $params['handler'];
         }
         if (isset($params['permissions']) && !empty($params['permissions'])) {
-            $listParams['extra_data']['route.permissions'] = $params['permissions'];
+            $listParams['information']['route.permissions'] = $params['permissions'];
         }
 
-        $list          = [];
+        $list       = [];
         $systemList = $this->logRepository->getSystemLogList($listParams);
         foreach ($systemList as $object) {
-            $list[] = $this->canonizeSystemLog($object);
+            $list[] = $this->canonizeSystemLogMysql($object);
         }
 
         // Get count
@@ -283,6 +265,131 @@ class LoggerService implements ServiceInterface
             ],
             'error'  => [],
         ];
+    }
+
+    public function readFromMongo($params): array
+    {
+        $limit  = (int)($params['limit'] ?? 25);
+        $page   = (int)($params['page'] ?? 1);
+        //$sort  = $params['order'] ?? ['time_create -1'];
+        $skip = ($page - 1) * $limit;
+
+        // Set options
+        $options = [
+            'skip' => $skip,
+            'limit' => $limit,
+            //'sort' => $sort
+        ];
+
+        // Set filters
+        $filter = [];
+        /* if (isset($params['identity']) && !empty($params['identity'])) {
+            $filter['identity'] = $params['identity'];
+        }
+        if (isset($params['name']) && !empty($params['name'])) {
+            $filter['name'] = $params['name'];
+        }
+        if (isset($params['email']) && !empty($params['email'])) {
+            $filter['email'] = $params['email'];
+        }
+        if (isset($params['mobile']) && !empty($params['mobile'])) {
+            $filter['mobile'] = $params['mobile'];
+        }
+        if (isset($params['priority']) && !empty($params['priority'])) {
+            $filter['priority'] = $params['priority'];
+        }
+        if (isset($params['level']) && !empty($params['level'])) {
+            $filter['level'] = $params['level'];
+        }
+        if (isset($params['message']) && !empty($params['message'])) {
+            $filter['message'] = $params['message'];
+        }
+        if (isset($params['user_id']) && !empty($params['user_id'])) {
+            $filter['user_id'] = $params['user_id'];
+        }
+        if (isset($params['company_id']) && !empty($params['company_id'])) {
+            $filter['company_id'] = $params['company_id'];
+        }
+        if (isset($params['data_from']) && !empty($params['data_from'])) {
+            $filter['data_from'] = strtotime(sprintf('%s 00:00:00', $params['data_from']));
+        }
+        if (isset($params['data_to']) && !empty($params['data_to'])) {
+            $filter['data_to'] = strtotime(sprintf('%s 00:00:00', $params['data_to']));
+        } */
+        if (isset($params['ip']) && !empty($params['ip'])) {
+            $filter['information.ip'] = $params['ip'];
+        }
+        /* if (isset($params['method']) && !empty($params['method'])) {
+            $filter['method'] = $params['method'];
+        }
+        if (isset($params['target']) && !empty($params['target'])) {
+            $filter['target'] = $params['target'];
+        }
+        if (isset($params['module']) && !empty($params['module'])) {
+            $filter['module'] = $params['module'];
+        }
+        if (isset($params['section']) && !empty($params['section'])) {
+            $filter['section'] = $params['section'];
+        }
+        if (isset($params['package']) && !empty($params['package'])) {
+            $filter['package'] = $params['package'];
+        }
+        if (isset($params['handler']) && !empty($params['handler'])) {
+            $filter['handler'] = $params['handler'];
+        }
+        if (isset($params['permissions']) && !empty($params['permissions'])) {
+            $filter['permissions'] = $params['permissions'];
+        } */
+
+        $query = new Query($filter, $options);
+        $namespace = "{$this->config['mongodb']['database']}.{$this->config['mongodb']['collection']}";
+
+        $manager = new Manager($this->config['mongodb']['uri']);
+        $cursor = $manager->executeQuery($namespace, $query);
+
+        $list = [];
+        foreach ($cursor as $document) {
+            $list[] = $this->canonizeSystemLogMongo($document);
+        }
+
+        // Execute the query to count the number of matching documents
+        $count = 0;
+        $cursor = $manager->executeQuery($namespace, $query);
+        foreach ($cursor as $document) {
+            $count++;
+        }
+
+        return [
+            'result' => true,
+            'data'   => [
+                'list'      => $list,
+                'paginator' => [
+                    'count' => $count,
+                    'limit' => $limit,
+                    'page'  => $page,
+                ],
+            ],
+            'error'  => [],
+        ];
+    }
+
+    public function cleanUpMysql(): void
+    {
+        $limitation = $this->config['limitation'] ?? 10000;
+        $this->logRepository->cleanupSystemLog($limitation);
+    }
+
+    public function cleanupForbiddenKeys(array $params): array
+    {
+        foreach ($params as $key => $value) {
+            if (in_array($key, $this->forbiddenParams)) {
+                unset($params[$key]);
+            } elseif (is_array($value)) {
+                $params[$key] = $this->cleanupForbiddenKeys($value);
+            }
+        }
+
+        return $params;
     }
 
     public function addUserLog(string $state, array $params): void
@@ -371,7 +478,7 @@ class LoggerService implements ServiceInterface
         ];
     }
 
-    public function canonizeSystemLog($object): array
+    public function canonizeSystemLogMysql($object): array
     {
         if (empty($object)) {
             return [];
@@ -379,64 +486,88 @@ class LoggerService implements ServiceInterface
 
         if (is_object($object)) {
             $object = [
-                'id'                => (int)$object->getId(),
-                'timestamp'         => $object->getTimestamp(),
-                'priority'          => $object->getPriority(),
-                'priority_name'     => $object->getPriorityName(),
-                'message'           => $object->getMessage(),
-                'extra_data'        => $object->getExtraData(),
-                'extra_time_create' => $object->getExtraTimeCreate(),
-                'extra_user_id'     => $object->getExtraUserId(),
-                'extra_company_id'  => $object->getExtraCompanyId(),
-                'user_identity'     => $object->getUserIdentity(),
-                'user_name'         => $object->getUserName(),
-                'user_email'        => $object->getUserEmail(),
-                'user_mobile'       => $object->getUserMobile(),
+                'id'            => (int)$object->getId(),
+                'timestamp'     => $object->getTimestamp(),
+                'priority'      => $object->getPriority(),
+                'level'         => $object->getLevel(),
+                'message'       => $object->getMessage(),
+                'information'   => $object->getInformation(),
+                'time_create'   => $object->getTimeCreate(),
+                'user_id'       => $object->getUserId(),
+                'company_id'    => $object->getCompanyId(),
+                'user_identity' => $object->getUserIdentity(),
+                'user_name'     => $object->getUserName(),
+                'user_email'    => $object->getUserEmail(),
+                'user_mobile'   => $object->getUserMobile(),
             ];
         } else {
             $object = [
-                'id'                => (int)$object['id'],
-                'timestamp'         => $object['timestamp'],
-                'priority'          => $object['priority'],
-                'priority_name'     => $object['priorityName'],
-                'message'           => $object['message'],
-                'extra_data'        => $object['extra_data'],
-                'extra_time_create' => $object['extra_time_create'],
-                'extra_user_id'     => $object['extra_user_id'],
-                'extra_company_id'  => $object['extra_company_id'],
-                'user_identity'     => $object['user_identity'],
-                'user_name'         => $object['user_name'],
-                'user_email'        => $object['user_email'],
-                'user_mobile'       => $object['user_mobile'],
+                'id'            => (int)$object['id'],
+                'timestamp'     => $object['timestamp'],
+                'priority'      => $object['priority'],
+                'level'         => $object['level'],
+                'message'       => $object['message'],
+                'information'   => $object['information'],
+                'time_create'   => $object['time_create'],
+                'user_id'       => $object['user_id'],
+                'company_id'    => $object['company_id'],
+                'user_identity' => $object['user_identity'],
+                'user_name'     => $object['user_name'],
+                'user_email'    => $object['user_email'],
+                'user_mobile'   => $object['user_mobile'],
             ];
         }
 
         // Set time
-        $object['time_create_view'] = $this->utilityService->date($object['extra_time_create']);
+        $object['time_create_view'] = $this->utilityService->date($object['time_create']);
 
         // Set information
-        $object['extra_data'] = !empty($object['extra_data']) ? json_decode($object['extra_data'], true) : [];
+        $object['information'] = !empty($object['information']) ? json_decode($object['information'], true) : [];
 
         // Set output params
-        $object['user_id']          = $object['extra_user_id'];
-        $object['company_id']       = $object['extra_company_id'];
-        $object['company_title']    = $object['extra_data']['request']['attributes']['company_authorization']['company']['title'] ?? null;
-        $object['ip']               = $object['extra_data']['ip'] ?? null;
-        $object['title']            = $object['extra_data']['route']['title'] ?? null;
-        $object['method']           = $object['extra_data']['request']['method'] ?? null;
-        $object['target']           = $object['extra_data']['request']['target'] ?? null;
-        $object['section']          = $object['extra_data']['route']['section'] ?? null;
-        $object['module']           = $object['extra_data']['route']['module'] ?? null;
-        $object['package']          = $object['extra_data']['route']['package'] ?? null;
-        $object['handler']          = $object['extra_data']['route']['handler'] ?? null;
-        $object['package_id']       = $object['extra_data']['request']['attributes']['company_authorization']['package']['id'] ?? null;
-        $object['package_title']    = $object['extra_data']['request']['attributes']['company_authorization']['package']['title'] ?? null;
-        $object['request_body']     = $object['extra_data']['request']['parsedBody'] ?? null;
-        $object['security_stream']  = $object['extra_data']['request']['attributes']['security_stream'] ?? null;
+        $object['company_title']   = $object['information']['request']['attributes']['company_authorization']['company']['title'] ?? null;
+        $object['ip']              = $object['information']['ip'] ?? null;
+        $object['title']           = $object['information']['route']['title'] ?? null;
+        $object['method']          = $object['information']['request']['method'] ?? null;
+        $object['target']          = $object['information']['request']['target'] ?? null;
+        $object['section']         = $object['information']['route']['section'] ?? null;
+        $object['module']          = $object['information']['route']['module'] ?? null;
+        $object['package']         = $object['information']['route']['package'] ?? null;
+        $object['handler']         = $object['information']['route']['handler'] ?? null;
+        $object['package_id']      = $object['information']['request']['attributes']['company_authorization']['package']['id'] ?? null;
+        $object['package_title']   = $object['information']['request']['attributes']['company_authorization']['package']['title'] ?? null;
+        $object['request_body']    = $object['information']['request']['parsedBody'] ?? null;
+        $object['security_stream'] = $object['information']['request']['attributes']['security_stream'] ?? null;
 
-        unset($object['extra_data']);
-        unset($object['extra_user_id']);
-        unset($object['extra_company_id']);
+        unset($object['information']);
+        unset($object['timestamp']);
+
+        return $object;
+    }
+
+    public function canonizeSystemLogMongo($object)
+    {
+        $object = json_decode(json_encode($object), true);
+
+        // Set time
+        $object['time_create_view'] = $this->utilityService->date($object['time_create']);
+
+        // Set output params
+        $object['company_title']   = $object['information']['request']['attributes']['company_authorization']['company']['title'] ?? null;
+        $object['ip']              = $object['information']['ip'] ?? null;
+        $object['title']           = $object['information']['route']['title'] ?? null;
+        $object['method']          = $object['information']['request']['method'] ?? null;
+        $object['target']          = $object['information']['request']['target'] ?? null;
+        $object['section']         = $object['information']['route']['section'] ?? null;
+        $object['module']          = $object['information']['route']['module'] ?? null;
+        $object['package']         = $object['information']['route']['package'] ?? null;
+        $object['handler']         = $object['information']['route']['handler'] ?? null;
+        $object['package_id']      = $object['information']['request']['attributes']['company_authorization']['package']['id'] ?? null;
+        $object['package_title']   = $object['information']['request']['attributes']['company_authorization']['package']['title'] ?? null;
+        $object['request_body']    = $object['information']['request']['parsedBody'] ?? null;
+        $object['security_stream'] = $object['information']['request']['attributes']['security_stream'] ?? null;
+
+        unset($object['information']);
         unset($object['timestamp']);
 
         return $object;

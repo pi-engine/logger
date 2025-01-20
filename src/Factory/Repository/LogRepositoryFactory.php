@@ -17,7 +17,7 @@ class LogRepositoryFactory implements FactoryInterface
         return new LogRepository(
             $container->get(AdapterInterface::class),
             new ReflectionHydrator(),
-            new System('', 0, '', '', 0, 0, 0, '', '','','','',0),
+            new System('', '',0,  '', 0, 0, '', 0, '', '','','','',0),
             new User(0, 0, 0, '', '', '', '', '', '', '','','','', 0),
         );
     }

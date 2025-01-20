@@ -39,7 +39,7 @@ class ListHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $requestBody = $request->getParsedBody();
-        $result      = $this->loggerService->getSystemLog($requestBody);
+        $result      = $this->loggerService->read($requestBody);
         return new EscapingJsonResponse($result);
     }
 }

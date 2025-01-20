@@ -3,6 +3,7 @@
 namespace Pi\Logger\Middleware;
 
 use Pi\Core\Handler\ErrorHandler;
+use Pi\Core\Service\UtilityService;
 use Pi\Logger\Service\LoggerService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -19,6 +20,9 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
     /** @var StreamFactoryInterface */
     protected StreamFactoryInterface $streamFactory;
 
+    /** @var UtilityService */
+    protected UtilityService $utilityService;
+
     /** @var ErrorHandler */
     protected ErrorHandler $errorHandler;
 
@@ -27,12 +31,14 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface $streamFactory,
-        ErrorHandler $errorHandler,
-        LoggerService $loggerService
+        StreamFactoryInterface   $streamFactory,
+        UtilityService         $utilityService,
+        ErrorHandler             $errorHandler,
+        LoggerService            $loggerService
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;
+        $this->utilityService = $utilityService;
         $this->errorHandler    = $errorHandler;
         $this->loggerService   = $loggerService;
     }
@@ -57,8 +63,8 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
         $routeMatch  = $request->getAttribute('Laminas\Router\RouteMatch');
         $routeParams = $routeMatch->getParams();
 
-        // Set message
-        $message = sprintf(
+        // Set path
+        $path = sprintf(
             '%s-%s-%s-%s',
             $routeParams['module'],
             $routeParams['section'],
@@ -66,12 +72,19 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
             $routeParams['handler']
         );
 
+        // Set message
+        $message = '';
+
         // Set log params
         $params = [
+            'path'       => $path,
+            'message'    => $message,
             'user_id'    => $attributes['account']['id'] ?? 0,
             'company_id' => $attributes['company_authorization']['company_id'] ?? 0,
             'ip'         => $request->getServerParams()['REMOTE_ADDR'],
             'route'      => $routeParams,
+            'timestamp'   => $this->utilityService->getTime(),
+            'time_create' => time(),
             'request'    => [
                 'method'          => $request->getMethod(),
                 'uri'             => (string)$request->getUri(),
@@ -98,6 +111,6 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
         ];
 
         // Set log
-        $this->loggerService->write($message, $params);
+        $this->loggerService->write($path, $params, $message);
     }
 }
