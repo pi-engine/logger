@@ -33,6 +33,16 @@ class LoggerService implements ServiceInterface
             'permission',
             'HTTP_TOKEN',
             'Token',
+            'controller',
+            'middleware',
+            'Laminas\Router\RouteMatch',
+            'token_data',
+            'current_token',
+            'company_authorization',
+            'media_authorization',
+            'setting',
+            'member',
+            'package',
         ];
 
     public function __construct(
@@ -45,7 +55,7 @@ class LoggerService implements ServiceInterface
         $this->config         = $config;
     }
 
-    public function write(string $path, array $params = [], string $message = '', int $priority = 200): void
+    public function write(array $params = [], int $priority = 200): void
     {
         // Clean up
         $params = $this->cleanupForbiddenKeys($params);
@@ -54,15 +64,15 @@ class LoggerService implements ServiceInterface
         $storage = $this->config['storage'] ?? 'disable';
         switch ($storage) {
             case 'mysql':
-                $this->writeToMysql($path, $params, $message, $priority);
+                $this->writeToMysql($params, $priority);
                 break;
 
             case 'mongodb':
-                $this->writeToMongo($path, $params, $message, $priority);
+                $this->writeToMongo($params, $priority);
                 break;
 
             case 'file':
-                $this->writeToFile($path, $params, $message, $priority);
+                $this->writeToFile($params, $priority);
                 break;
 
             case '':
@@ -72,22 +82,19 @@ class LoggerService implements ServiceInterface
         }
     }
 
-    public function writeToMysql(string $path, array $params, string $message, int $priority): void
+    public function writeToMysql(array $params, int $priority): void
     {
-        // Set data
-        $params = json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK);
-
         // Set log params
         $addParams = [
-            'path'        => $path,
-            'message'     => $message,
+            'path'        => $params['path'] ?? '',
+            'message'     => $params['message'] ?? '',
             'priority'    => $priority,
             'level'       => Logger::getLevelName($priority),
             'user_id'     => (int)$params['user_id'],
             'company_id'  => (int)$params['company_id'],
             'timestamp'   => $this->utilityService->getTime(),
             'time_create' => time(),
-            'information' => $params,
+            'information' => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK),
         ];
 
         // Save log to local db
@@ -99,12 +106,12 @@ class LoggerService implements ServiceInterface
         }
     }
 
-    public function writeToMongo(string $path, array $params, string $message, int $priority): void
+    public function writeToMongo(array $params, int $priority): void
     {
         // Set log params
         $addParams = [
-            'path'        => $path,
-            'message'     => $message,
+            'path'        => $params['path'] ?? '',
+            'message'     => $params['message'] ?? '',
             'priority'    => $priority,
             'level'       => Logger::getLevelName($priority),
             'user_id'     => (int)$params['user_id'],
@@ -122,7 +129,7 @@ class LoggerService implements ServiceInterface
         $manager->executeBulkWrite("{$this->config['mongodb']['database']}.{$this->config['mongodb']['collection']}", $bulk);
     }
 
-    public function writeToFile(string $path, array $params, string $message, int $priority): void
+    public function writeToFile(array $params, int $priority): void
     {
         // Set file path
         $logFilePath = sprintf('%s/%s.json', $this->config['file']['path'], date($this->config['file']['date_format']));
@@ -140,7 +147,7 @@ class LoggerService implements ServiceInterface
         $logger->pushHandler($streamHandler);
 
         // Example log entries
-        $message = !empty($message) ? $message : $path;
+        $message = $params['message'] ?? $params['path'] ?? '';
         if (in_array($priority, [400, 500, 550, 600])) {
             $logger->error($message, $params);
         } else {

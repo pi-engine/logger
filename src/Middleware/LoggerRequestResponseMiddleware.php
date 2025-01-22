@@ -72,13 +72,10 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
             $routeParams['handler']
         );
 
-        // Set message
-        $message = '';
-
         // Set log params
         $params = [
             'path'       => $path,
-            'message'    => $message,
+            'message'    => $routeParams['title'] ?? '',
             'user_id'    => $attributes['account']['id'] ?? 0,
             'company_id' => $attributes['company_authorization']['company_id'] ?? 0,
             'ip'         => $request->getServerParams()['REMOTE_ADDR'],
@@ -100,17 +97,17 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
                 'target'          => $request->getRequestTarget(),
             ],
             'response'   => [
-                'body'            => $response->getBody(),
+                //'body'            => $response->getBody(),
                 'headers'         => $response->getHeaders(),
                 'protocolVersion' => $response->getProtocolVersion(),
                 'encodingOptions' => $response->getEncodingOptions(),
-                'payload'         => $response->getPayload(),
+                //'payload'         => $response->getPayload(),
                 'reasonPhrase'    => $response->getReasonPhrase(),
                 'statusCode'      => $response->getStatusCode(),
             ],
         ];
 
         // Set log
-        $this->loggerService->write($path, $params, $message);
+        $this->loggerService->write($params);
     }
 }
