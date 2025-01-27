@@ -151,7 +151,7 @@ class LoggerService implements ServiceInterface
         if (in_array($priority, [400, 500, 550, 600])) {
             $logger->error($message, $params);
         } else {
-            $logger->info($message , $params);
+            $logger->info($message, $params);
         }
     }
 
@@ -276,14 +276,14 @@ class LoggerService implements ServiceInterface
 
     public function readFromMongo($params): array
     {
-        $limit  = (int)($params['limit'] ?? 25);
-        $page   = (int)($params['page'] ?? 1);
+        $limit = (int)($params['limit'] ?? 25);
+        $page  = (int)($params['page'] ?? 1);
         //$sort  = $params['order'] ?? ['time_create -1'];
         $skip = ($page - 1) * $limit;
 
         // Set options
         $options = [
-            'skip' => $skip,
+            'skip'  => $skip,
             'limit' => $limit,
             //'sort' => $sort
         ];
@@ -348,11 +348,11 @@ class LoggerService implements ServiceInterface
             $filter['permissions'] = $params['permissions'];
         } */
 
-        $query = new Query($filter, $options);
+        $query     = new Query($filter, $options);
         $namespace = "{$this->config['mongodb']['database']}.{$this->config['mongodb']['collection']}";
 
         $manager = new Manager($this->config['mongodb']['uri']);
-        $cursor = $manager->executeQuery($namespace, $query);
+        $cursor  = $manager->executeQuery($namespace, $query);
 
         $list = [];
         foreach ($cursor as $document) {
@@ -360,7 +360,7 @@ class LoggerService implements ServiceInterface
         }
 
         // Execute the query to count the number of matching documents
-        $count = 0;
+        $count  = 0;
         $cursor = $manager->executeQuery($namespace, $query);
         foreach ($cursor as $document) {
             $count++;
@@ -498,6 +498,7 @@ class LoggerService implements ServiceInterface
                 'priority'      => $object->getPriority(),
                 'level'         => $object->getLevel(),
                 'message'       => $object->getMessage(),
+                'path'          => $object->getPath(),
                 'information'   => $object->getInformation(),
                 'time_create'   => $object->getTimeCreate(),
                 'user_id'       => $object->getUserId(),
@@ -514,6 +515,7 @@ class LoggerService implements ServiceInterface
                 'priority'      => $object['priority'],
                 'level'         => $object['level'],
                 'message'       => $object['message'],
+                'path'          => $object['path'],
                 'information'   => $object['information'],
                 'time_create'   => $object['time_create'],
                 'user_id'       => $object['user_id'],
@@ -532,7 +534,7 @@ class LoggerService implements ServiceInterface
         $object['information'] = !empty($object['information']) ? json_decode($object['information'], true) : [];
 
         // Set output params
-        $object['company_title']   = $object['information']['request']['attributes']['company_authorization']['company']['title'] ?? null;
+        $object['company_title']   = $object['information']['request']['attributes']['account']['company_title'] ?? null;
         $object['ip']              = $object['information']['ip'] ?? null;
         $object['title']           = $object['information']['route']['title'] ?? null;
         $object['method']          = $object['information']['request']['method'] ?? null;
