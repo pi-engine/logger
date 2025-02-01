@@ -10,6 +10,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Pi\Core\Service\UtilityService;
 use Pi\Logger\Repository\LogRepositoryInterface;
+use Psr\Log\LogLevel;
 
 class LoggerService implements ServiceInterface
 {
@@ -22,6 +23,19 @@ class LoggerService implements ServiceInterface
     /* @var array */
     protected array $config;
 
+    /* @var array */
+    private static array $priorities = [
+        LogLevel::EMERGENCY => 0,
+        LogLevel::ALERT     => 1,
+        LogLevel::CRITICAL  => 2,
+        LogLevel::ERROR     => 3,
+        LogLevel::WARNING   => 4,
+        LogLevel::NOTICE    => 5,
+        LogLevel::INFO      => 6,
+        LogLevel::DEBUG     => 7,
+    ];
+
+    /* @var array */
     protected array $forbiddenParams
         = [
             'credential',
@@ -55,7 +69,7 @@ class LoggerService implements ServiceInterface
         $this->config         = $config;
     }
 
-    public function write(array $params = [], int $priority = 200): void
+    public function write(array $params = [], string $level = LogLevel::INFO): void
     {
         // Clean up
         $params = $this->cleanupForbiddenKeys($params);
@@ -64,15 +78,15 @@ class LoggerService implements ServiceInterface
         $storage = $this->config['storage'] ?? 'disable';
         switch ($storage) {
             case 'mysql':
-                $this->writeToMysql($params, $priority);
+                $this->writeToMysql($params, $level);
                 break;
 
             case 'mongodb':
-                $this->writeToMongo($params, $priority);
+                $this->writeToMongo($params, $level);
                 break;
 
             case 'file':
-                $this->writeToFile($params, $priority);
+                $this->writeToFile($params, $level);
                 break;
 
             case '':
@@ -82,14 +96,14 @@ class LoggerService implements ServiceInterface
         }
     }
 
-    public function writeToMysql(array $params, int $priority): void
+    public function writeToMysql(array $params, string $level): void
     {
         // Set log params
         $addParams = [
             'path'        => $params['path'] ?? '',
             'message'     => $params['message'] ?? '',
-            'priority'    => $priority,
-            'level'       => Logger::getLevelName($priority),
+            'priority'    => $this->getPriority($level),
+            'level'       => $level,
             'user_id'     => (int)$params['user_id'],
             'company_id'  => (int)$params['company_id'],
             'timestamp'   => $this->utilityService->getTime(),
@@ -106,14 +120,14 @@ class LoggerService implements ServiceInterface
         }
     }
 
-    public function writeToMongo(array $params, int $priority): void
+    public function writeToMongo(array $params, string $level): void
     {
         // Set log params
         $addParams = [
             'path'        => $params['path'] ?? '',
             'message'     => $params['message'] ?? '',
-            'priority'    => $priority,
-            'level'       => Logger::getLevelName($priority),
+            'priority'    => $this->getPriority($level),
+            'level'       => $level,
             'user_id'     => (int)$params['user_id'],
             'company_id'  => (int)$params['company_id'],
             'timestamp'   => $this->utilityService->getTime(),
@@ -129,7 +143,7 @@ class LoggerService implements ServiceInterface
         $manager->executeBulkWrite("{$this->config['mongodb']['database']}.{$this->config['mongodb']['collection']}", $bulk);
     }
 
-    public function writeToFile(array $params, int $priority): void
+    public function writeToFile(array $params, string $level): void
     {
         // Set file path
         $logFilePath = sprintf('%s/%s.json', $this->config['file']['path'], date($this->config['file']['date_format']));
@@ -138,7 +152,7 @@ class LoggerService implements ServiceInterface
         $logger = new Logger('logger_system');
 
         // Create a StreamHandler
-        $streamHandler = new StreamHandler($logFilePath, $priority);
+        $streamHandler = new StreamHandler($logFilePath, $level);
 
         // Attach a JsonFormatter to the handler
         $streamHandler->setFormatter(new JsonFormatter());
@@ -146,12 +160,41 @@ class LoggerService implements ServiceInterface
         // Add the handler to the logger
         $logger->pushHandler($streamHandler);
 
-        // Example log entries
+        // Add log entries
         $message = $params['message'] ?? $params['path'] ?? '';
-        if (in_array($priority, [400, 500, 550, 600])) {
-            $logger->error($message, $params);
-        } else {
-            $logger->info($message, $params);
+        switch ($level) {
+            case LogLevel::EMERGENCY:
+                $logger->emergency($message, $params);
+                break;
+
+            case LogLevel::ALERT:
+                $logger->alert($message, $params);
+                break;
+
+            case LogLevel::CRITICAL:
+                $logger->critical($message, $params);
+                break;
+
+            case LogLevel::ERROR:
+                $logger->error($message, $params);
+                break;
+
+            case LogLevel::WARNING:
+                $logger->warning($message, $params);
+                break;
+
+            case LogLevel::NOTICE:
+                $logger->notice($message, $params);
+                break;
+
+            case LogLevel::DEBUG:
+                $logger->debug($message, $params);
+                break;
+
+            default:
+            case LogLevel::INFO:
+                $logger->info($message, $params);
+                break;
         }
     }
 
@@ -483,6 +526,11 @@ class LoggerService implements ServiceInterface
             ],
             'error'  => [],
         ];
+    }
+
+    public static function getPriority(string $level): ?int
+    {
+        return self::$priorities[$level] ?? null;
     }
 
     public function canonizeSystemLogMysql($object): array
