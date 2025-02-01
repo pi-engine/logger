@@ -32,13 +32,13 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
     public function __construct(
         ResponseFactoryInterface $responseFactory,
         StreamFactoryInterface   $streamFactory,
-        UtilityService         $utilityService,
+        UtilityService           $utilityService,
         ErrorHandler             $errorHandler,
         LoggerService            $loggerService
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;
-        $this->utilityService = $utilityService;
+        $this->utilityService  = $utilityService;
         $this->errorHandler    = $errorHandler;
         $this->loggerService   = $loggerService;
     }
@@ -74,15 +74,15 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
 
         // Set log params
         $params = [
-            'path'       => $path,
-            'message'    => $routeParams['title'] ?? '',
-            'user_id'    => $attributes['account']['id'] ?? 0,
-            'company_id' => $attributes['company_authorization']['company_id'] ?? 0,
-            'ip'         => $request->getServerParams()['REMOTE_ADDR'],
-            'route'      => $routeParams,
+            'path'        => $path,
+            'message'     => $routeParams['title'] ?? '',
+            'user_id'     => $attributes['account']['id'] ?? 0,
+            'company_id'  => $attributes['company_authorization']['company_id'] ?? 0,
+            'ip'          => $this->utilityService->getClientIp(),
+            'route'       => $routeParams,
             'timestamp'   => $this->utilityService->getTime(),
             'time_create' => time(),
-            'request'    => [
+            'request'     => [
                 'method'          => $request->getMethod(),
                 'uri'             => (string)$request->getUri(),
                 'headers'         => $request->getHeaders(),
@@ -96,7 +96,7 @@ class LoggerRequestResponseMiddleware implements MiddlewareInterface
                 'attributes'      => $request->getAttributes(),
                 'target'          => $request->getRequestTarget(),
             ],
-            'response'   => [
+            'response'    => [
                 //'body'            => $response->getBody(),
                 'headers'         => $response->getHeaders(),
                 'protocolVersion' => $response->getProtocolVersion(),
