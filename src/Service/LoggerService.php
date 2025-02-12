@@ -24,16 +24,17 @@ class LoggerService implements ServiceInterface
     protected array $config;
 
     /* @var array */
-    private static array $priorities = [
-        LogLevel::EMERGENCY => 0,
-        LogLevel::ALERT     => 1,
-        LogLevel::CRITICAL  => 2,
-        LogLevel::ERROR     => 3,
-        LogLevel::WARNING   => 4,
-        LogLevel::NOTICE    => 5,
-        LogLevel::INFO      => 6,
-        LogLevel::DEBUG     => 7,
-    ];
+    private static array $priorities
+        = [
+            LogLevel::EMERGENCY => 0,
+            LogLevel::ALERT     => 1,
+            LogLevel::CRITICAL  => 2,
+            LogLevel::ERROR     => 3,
+            LogLevel::WARNING   => 4,
+            LogLevel::NOTICE    => 5,
+            LogLevel::INFO      => 6,
+            LogLevel::DEBUG     => 7,
+        ];
 
     /* @var array */
     protected array $forbiddenParams
@@ -528,7 +529,94 @@ class LoggerService implements ServiceInterface
         ];
     }
 
-    public static function getPriority(string $level): ?int
+    public function addHistoryLog(string $state, array $params): void
+    {
+        $addParams = [
+            'relation_module'  => $params['relation_module'],
+            'relation_section' => $params['relation_section'],
+            'relation_item'    => $params['relation_item'],
+            'user_id'          => $params['user_id'] ?? 0,
+            'company_id'       => $params['company_id'] ?? 0,
+            'time_create'      => time(),
+            'state'            => $state,
+            'information'      => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK),
+        ];
+
+        $this->logRepository->addHistoryLog($addParams);
+    }
+
+    public function getHistoryLog($params): array
+    {
+        $limit  = (int)($params['limit'] ?? 25);
+        $page   = (int)($params['page'] ?? 1);
+        $order  = $params['order'] ?? ['time_create DESC'];
+        $offset = ($page - 1) * $limit;
+
+        $listParams = [
+            'order'  => $order,
+            'offset' => $offset,
+            'limit'  => $limit,
+        ];
+
+        if (isset($params['identity']) && !empty($params['identity'])) {
+            $listParams['identity'] = $params['identity'];
+        }
+        if (isset($params['name']) && !empty($params['name'])) {
+            $listParams['name'] = $params['name'];
+        }
+        if (isset($params['email']) && !empty($params['email'])) {
+            $listParams['email'] = $params['email'];
+        }
+        if (isset($params['mobile']) && !empty($params['mobile'])) {
+            $listParams['mobile'] = $params['mobile'];
+        }
+        if (isset($params['user_id']) && !empty($params['user_id'])) {
+            $listParams['user_id'] = $params['user_id'];
+        }
+        if (isset($params['company_id']) && !empty($params['company_id'])) {
+            $listParams['company_id'] = $params['company_id'];
+        }
+        if (isset($params['company_id']) && !empty($params['company_id'])) {
+            $listParams['company_id'] = $params['company_id'];
+        }
+        if (isset($params['relation_module']) && !empty($params['relation_module'])) {
+            $listParams['relation_module'] = $params['relation_module'];
+        }
+        if (isset($params['relation_section']) && !empty($params['relation_section'])) {
+            $listParams['relation_section'] = $params['relation_section'];
+        }
+        if (isset($params['relation_item']) && !empty($params['relation_item'])) {
+            $listParams['relation_item'] = $params['relation_item'];
+        }
+        if (isset($params['state']) && !empty($params['state'])) {
+            $listParams['state'] = $params['state'];
+        }
+
+        // Get list
+        $list   = [];
+        $rowSet = $this->logRepository->getHistoryLogList($listParams);
+        foreach ($rowSet as $row) {
+            $list[] = $this->canonizeHistoryLog($row);
+        }
+
+        // Get count
+        $count = $this->logRepository->getHistoryLogCount($listParams);
+
+        return [
+            'result' => true,
+            'data'   => [
+                'list'      => $list,
+                'paginator' => [
+                    'count' => $count,
+                    'limit' => $limit,
+                    'page'  => $page,
+                ],
+            ],
+            'error'  => [],
+        ];
+    }
+
+    public function getPriority(string $level): ?int
     {
         return self::$priorities[$level] ?? null;
     }
@@ -681,6 +769,55 @@ class LoggerService implements ServiceInterface
         // Unset not used data
         unset($object['information']['params']['serverParams']);
         unset($object['information']['request']['security_stream']);
+
+        return $object;
+    }
+
+    public function canonizeHistoryLog($object): array
+    {
+        if (empty($object)) {
+            return [];
+        }
+
+        if (is_object($object)) {
+            $object = [
+                'id'               => (int)$object->getId(),
+                'user_id'          => $object->getUserId(),
+                'user_identity'    => $object->getUserIdentity(),
+                'user_name'        => $object->getUserName(),
+                'user_email'       => $object->getUserEmail(),
+                'user_mobile'      => $object->getUserMobile(),
+                'company_id'       => $object->getCompanyId(),
+                'relation_module'  => $object->getRelationModule(),
+                'relation_section' => $object->getRelationSection(),
+                'relation_item'    => $object->getRelationItem(),
+                'time_create'      => $object->getTimeCreate(),
+                'state'            => $object->getState(),
+                'information'      => $object->getInformation(),
+            ];
+        } else {
+            $object = [
+                'id'               => (int)$object['id'],
+                'user_id'          => $object['user_id'],
+                'user_identity'    => $object['user_identity'],
+                'user_name'        => $object['user_name'],
+                'user_email'       => $object['user_email'],
+                'user_mobile'      => $object['user_mobile'],
+                'company_id'       => $object['company_id'],
+                'relation_module'  => $object['relation_module'],
+                'relation_section' => $object['relation_section'],
+                'relation_item'    => $object['relation_item'],
+                'time_create'      => $object['time_create'],
+                'state'            => $object['state'],
+                'information'      => $object['information'],
+            ];
+        }
+
+        // Set data
+        $object['time_create_view'] = $this->utilityService->date($object['time_create']);
+
+        // Set information
+        $object['information'] = json_decode($object['information'], true);
 
         return $object;
     }
