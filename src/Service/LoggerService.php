@@ -36,30 +36,6 @@ class LoggerService implements ServiceInterface
             LogLevel::DEBUG     => 7,
         ];
 
-    /* @var array */
-    protected array $forbiddenParams
-        = [
-            'credential',
-            'credentialColumn',
-            'token',
-            'access_token',
-            'refresh_token',
-            'token_payload',
-            'permission',
-            'HTTP_TOKEN',
-            'Token',
-            'controller',
-            'middleware',
-            'Laminas\Router\RouteMatch',
-            'token_data',
-            'current_token',
-            'company_authorization',
-            'media_authorization',
-            'setting',
-            'member',
-            'package',
-        ];
-
     public function __construct(
         LogRepositoryInterface $logRepository,
         UtilityService         $utilityService,
@@ -432,11 +408,13 @@ class LoggerService implements ServiceInterface
 
     public function cleanupForbiddenKeys(array $params): array
     {
-        foreach ($params as $key => $value) {
-            if (in_array($key, $this->forbiddenParams)) {
-                unset($params[$key]);
-            } elseif (is_array($value)) {
-                $params[$key] = $this->cleanupForbiddenKeys($value);
+        if (isset($this->config['forbidden_keys']) && !empty($this->config['forbidden_keys'])) {
+            foreach ($params as $key => $value) {
+                if (in_array($key, $this->config['forbidden_keys'])) {
+                    unset($params[$key]);
+                } elseif (is_array($value)) {
+                    $params[$key] = $this->cleanupForbiddenKeys($value);
+                }
             }
         }
 

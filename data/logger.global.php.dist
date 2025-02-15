@@ -14,5 +14,26 @@ return [
             'path'        => 'LOCAL_PATH',
             'date_format' => 'Y-m-d',
         ],
+        'forbidden_keys' => [
+            'credential',
+            'credentialColumn',
+            'token',
+            'access_token',
+            'refresh_token',
+            'token_payload',
+            'permission',
+            'HTTP_TOKEN',
+            'Token',
+            'controller',
+            'middleware',
+            'Laminas\Router\RouteMatch',
+            'token_data',
+            'current_token',
+            'company_authorization',
+            'media_authorization',
+            'setting',
+            'member',
+            'package',
+        ]
     ]
 ];
