@@ -21,9 +21,10 @@ return [
             Handler\InstallerHandler::class                   => Factory\Handler\InstallerHandlerFactory::class,
             Handler\Admin\System\ListHandler::class           => Factory\Handler\Admin\System\ListHandlerFactory::class,
             Handler\Admin\User\ListHandler::class             => Factory\Handler\Admin\User\ListHandlerFactory::class,
+            Handler\Admin\Manage\RepositoryHandler::class     => Factory\Handler\Admin\Manage\RepositoryHandlerFactory::class,
         ],
     ],
-    'router' => [
+    'router'          => [
         'routes' => [
             // Admin section
             'admin_logger' => [
@@ -33,23 +34,23 @@ return [
                     'defaults' => [],
                 ],
                 'child_routes' => [
-                    'system' => [
+                    'system'    => [
                         'type'         => Literal::class,
                         'options'      => [
                             'route'    => '/system',
                             'defaults' => [],
                         ],
                         'child_routes' => [
-                            'read' => [
+                            'list' => [
                                 'type'    => Literal::class,
                                 'options' => [
                                     'route'    => '/list',
                                     'defaults' => [
-                                        'title'      => 'Admin logger user read',
+                                        'title'      => 'Admin logger user list',
                                         'module'     => 'logger',
                                         'section'    => 'admin',
                                         'package'    => 'system',
-                                        'handler'    => 'read',
+                                        'handler'    => 'list',
                                         'permission' => 'admin-logger-system-list',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
@@ -71,7 +72,7 @@ return [
                             'defaults' => [],
                         ],
                         'child_routes' => [
-                            'read' => [
+                            'list' => [
                                 'type'    => Literal::class,
                                 'options' => [
                                     'route'    => '/list',
@@ -89,6 +90,37 @@ return [
                                             AuthenticationMiddleware::class,
                                             AuthorizationMiddleware::class,
                                             Handler\Admin\User\ListHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'manage'    => [
+                        'type'         => Literal::class,
+                        'options'      => [
+                            'route'    => '/manage',
+                            'defaults' => [],
+                        ],
+                        'child_routes' => [
+                            'repository' => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/repository',
+                                    'defaults' => [
+                                        'title'      => 'Admin logger manage repository',
+                                        'module'     => 'logger',
+                                        'section'    => 'admin',
+                                        'package'    => 'manage',
+                                        'handler'    => 'repository',
+                                        'permission' => 'admin-logger-manage-repository',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            AuthorizationMiddleware::class,
+                                            Handler\Admin\Manage\RepositoryHandler::class
                                         ),
                                     ],
                                 ],
@@ -119,7 +151,7 @@ return [
             ],
         ],
     ],
-    'view_manager' => [
+    'view_manager'    => [
         'strategies' => [
             'ViewJsonStrategy',
         ],

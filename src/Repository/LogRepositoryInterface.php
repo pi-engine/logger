@@ -12,7 +12,7 @@ interface LogRepositoryInterface
 
     public function getSystemLogCount(array $params = []): int;
 
-    public function cleanupSystemLog(int $limitation = 1000): void;
+    public function cleanupSystemLog(int $rowsToDelete): void;
 
     public function addUserLog(array $params = []): void;
 

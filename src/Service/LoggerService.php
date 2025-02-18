@@ -90,11 +90,6 @@ class LoggerService implements ServiceInterface
 
         // Save log to local db
         $this->logRepository->addSystemLog($addParams);
-
-        // Check and cleanup
-        if (isset($this->config['cleanup']) && (bool)$this->config['cleanup'] === true) {
-            $this->cleanUpMysql();
-        }
     }
 
     public function writeToMongo(array $params, string $level): void
@@ -400,12 +395,6 @@ class LoggerService implements ServiceInterface
         ];
     }
 
-    public function cleanUpMysql(): void
-    {
-        $limitation = $this->config['limitation'] ?? 10000;
-        $this->logRepository->cleanupSystemLog($limitation);
-    }
-
     public function cleanupForbiddenKeys(array $params): array
     {
         if (isset($this->config['forbidden_keys']) && !empty($this->config['forbidden_keys'])) {
@@ -597,6 +586,85 @@ class LoggerService implements ServiceInterface
     public function getPriority(string $level): ?int
     {
         return self::$priorities[$level] ?? null;
+    }
+
+    public function checkRepository(): array
+    {
+        // Set defaults
+        $cleanup          = $this->config['limitation']['cleanup'] ?? true;
+        $maximumAllowed   = $this->config['limitation']['maximum_allowed'] ?? 10000;
+        $alertThreshold   = 80;
+        $cleanupThreshold = 95;
+        $cleanupAmount    = 30;
+        $rowsToDelete     = 0;
+
+        // Check and set alert_threshold
+        if (
+            isset($this->config['limitation']['alert_threshold'])
+            && (int)$this->config['limitation']['alert_threshold'] > 79
+            && (int)$this->config['limitation']['alert_threshold'] < 89
+        ) {
+            $alertThreshold = $this->config['limitation']['alert_threshold'];
+        }
+
+        // Check and set cleanup_threshold
+        if (
+            isset($this->config['limitation']['cleanup_threshold'])
+            && (int)$this->config['limitation']['cleanup_threshold'] > 89
+            && (int)$this->config['limitation']['cleanup_threshold'] < 100
+        ) {
+            $cleanupThreshold = $this->config['limitation']['cleanup_threshold'];
+        }
+
+        // Check and set cleanup_amount
+        if (
+            isset($this->config['limitation']['cleanup_amount'])
+            && (int)$this->config['limitation']['cleanup_amount'] > 20
+            && (int)$this->config['limitation']['cleanup_amount'] < 35
+        ) {
+            $cleanupAmount = $this->config['limitation']['cleanup_amount'];
+        }
+
+        // Get count
+        $count = $this->logRepository->getSystemLogCount();
+
+        // Set percentage
+        $percentage = round(($count / $maximumAllowed) * 100, 0);
+        if ($percentage >= $alertThreshold) {
+            if ($percentage >= $cleanupThreshold) {
+
+                // cleanup logs
+                $rowsToDelete = (int)ceil(($cleanupAmount / 100) * $count);
+                $this->logRepository->cleanupSystemLog($rowsToDelete);
+
+
+                // Set message
+                $message = "Log storage exceeded cleanup threshold ({$percentage}%). Performed cleanup of {$rowsToDelete} records.";
+                $alert   = 'warning';
+            } else {
+                $message = "Log storage is critically high ({$percentage}%). Immediate action is recommended.";
+                $alert   = 'danger';
+            }
+        } else {
+            $message = "Log storage usage is within safe limits ({$percentage}%).";
+            $alert   = 'success';
+        }
+
+        return [
+            'result' => true,
+            'data'   => [
+                'message'           => $message,
+                'alert'             => $alert,
+                'total_logs'        => $count,
+                'allowed_logs'      => $maximumAllowed,
+                'percentage'        => $percentage,
+                'alert_threshold'   => $alertThreshold,
+                'cleanup_threshold' => $cleanupThreshold,
+                'cleanup_amount'    => $cleanupAmount,
+                'rows_to_delete'    => $rowsToDelete,
+            ],
+            'error'  => [],
+        ];
     }
 
     public function canonizeSystemLogMysql($object): array

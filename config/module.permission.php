@@ -25,5 +25,16 @@ return [
                 'admin',
             ],
         ],
+        [
+            'title'      => 'Admin logger manage repository',
+            'module'     => 'logger',
+            'section'    => 'admin',
+            'package'    => 'manage',
+            'handler'    => 'repository',
+            'permission' => 'admin-logger-manage-repository',
+            'role'       => [
+                'admin',
+            ],
+        ],
     ],
 ];

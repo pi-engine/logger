@@ -190,7 +190,7 @@ class LogRepository implements LogRepositoryInterface
         return (int)$row['count'];
     }
 
-    public function cleanupSystemLog(int $limitation = 10000): void
+    public function cleanupSystemLogOld(int $limitation = 10000): void
     {
         // Set columns
         $columns = ['count' => new Expression('count(*)')];
@@ -225,6 +225,36 @@ class LogRepository implements LogRepositoryInterface
             }
         }
     }
+
+    public function cleanupSystemLog(int $rowsToDelete): void
+    {
+        // Get the first X IDs to delete
+        $sql       = new Sql($this->db);
+        $select    = $sql->select($this->tableSystem)
+            ->columns(['id'])
+            ->order('id ASC')
+            ->limit($rowsToDelete);
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $resultSet = $statement->execute();
+
+        // Collect IDs to delete
+        $idsToDelete = [];
+        foreach ($resultSet as $row) {
+            $idsToDelete[] = (int) $row['id'];
+        }
+
+        if (!empty($idsToDelete)) {
+            // Perform batch delete
+            $delete    = $sql->delete($this->tableSystem)->where(['id' => $idsToDelete]);
+            $statement = $sql->prepareStatementForSqlObject($delete);
+            $result    = $statement->execute();
+
+            if (!$result instanceof ResultInterface) {
+                throw new RuntimeException('Database error occurred during delete operation');
+            }
+        }
+    }
+
 
     public function addUserLog(array $params = []): void
     {
