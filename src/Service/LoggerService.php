@@ -637,7 +637,6 @@ class LoggerService implements ServiceInterface
                 $rowsToDelete = (int)ceil(($cleanupAmount / 100) * $count);
                 $this->logRepository->cleanupSystemLog($rowsToDelete);
 
-
                 // Set message
                 $message = "Log storage exceeded cleanup threshold ({$percentage}%). Performed cleanup of {$rowsToDelete} records.";
                 $alert   = 'warning';
@@ -736,7 +735,7 @@ class LoggerService implements ServiceInterface
         return $object;
     }
 
-    public function canonizeSystemLogMongo($object)
+    public function canonizeSystemLogMongo($object): array
     {
         $object = json_decode(json_encode($object), true);
 
