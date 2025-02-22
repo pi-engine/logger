@@ -4,11 +4,11 @@
 return [
     'admin' => [
         [
-            'title'      => 'Admin logger user read',
+            'title'      => 'Admin logger user list',
             'module'     => 'logger',
             'section'    => 'admin',
             'package'    => 'system',
-            'handler'    => 'read',
+            'handler'    => 'list',
             'permission' => 'admin-logger-system-list',
             'role'       => [
                 'admin',
