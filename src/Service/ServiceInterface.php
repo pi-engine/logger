@@ -2,6 +2,4 @@
 
 namespace Pi\Logger\Service;
 
-interface ServiceInterface
-{
-}
+interface ServiceInterface {}

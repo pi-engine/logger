@@ -38,33 +38,33 @@ class System
     public function __construct(
         string $path,
         string $message,
-        int $priority,
+        int    $priority,
         string $level,
-        int $user_id,
-        int $company_id,
+        int    $user_id,
+        int    $company_id,
         string $timestamp,
-        int $time_create,
+        int    $time_create,
         string $information,
         string $user_identity = null,
         string $user_name = null,
         string $user_email = null,
         string $user_mobile = null,
-        mixed $id = null
+        mixed  $id = null
     ) {
-        $this->id                = $id;
-        $this->path           = $path;
-        $this->message           = $message;
-        $this->priority          = $priority;
-        $this->level      = $level;
-        $this->user_id     = $user_id;
-        $this->company_id  = $company_id;
-        $this->timestamp         = $timestamp;
-        $this->time_create = $time_create;
-        $this->information        = $information;
-        $this->user_identity     = $user_identity;
-        $this->user_name         = $user_name;
-        $this->user_email        = $user_email;
-        $this->user_mobile       = $user_mobile;
+        $this->id            = $id;
+        $this->path          = $path;
+        $this->message       = $message;
+        $this->priority      = $priority;
+        $this->level         = $level;
+        $this->user_id       = $user_id;
+        $this->company_id    = $company_id;
+        $this->timestamp     = $timestamp;
+        $this->time_create   = $time_create;
+        $this->information   = $information;
+        $this->user_identity = $user_identity;
+        $this->user_name     = $user_name;
+        $this->user_email    = $user_email;
+        $this->user_mobile   = $user_mobile;
     }
 
     /**

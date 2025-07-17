@@ -33,19 +33,19 @@ class History
         $user_mobile = null,
         $id = null
     ) {
-        $this->user_id           = $user_id;
+        $this->user_id          = $user_id;
         $this->company_id       = $company_id;
         $this->relation_module  = $relation_module;
         $this->relation_section = $relation_section;
         $this->relation_item    = $relation_item;
-        $this->time_create       = $time_create;
-        $this->state             = $state;
-        $this->information       = $information;
-        $this->user_identity     = $user_identity;
-        $this->user_name         = $user_name;
-        $this->user_email        = $user_email;
-        $this->user_mobile       = $user_mobile;
-        $this->id                = $id;
+        $this->time_create      = $time_create;
+        $this->state            = $state;
+        $this->information      = $information;
+        $this->user_identity    = $user_identity;
+        $this->user_name        = $user_name;
+        $this->user_email       = $user_email;
+        $this->user_mobile      = $user_mobile;
+        $this->id               = $id;
     }
 
     public function getId(): ?int

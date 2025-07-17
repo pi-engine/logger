@@ -23,8 +23,8 @@ class RepositoryHandler implements RequestHandlerInterface
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface $streamFactory,
-        LoggerService $loggerService
+        StreamFactoryInterface   $streamFactory,
+        LoggerService            $loggerService
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;
@@ -38,7 +38,7 @@ class RepositoryHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $result      = $this->loggerService->checkRepository();
+        $result = $this->loggerService->checkRepository();
         return new EscapingJsonResponse($result);
     }
 }

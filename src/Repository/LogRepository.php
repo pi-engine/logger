@@ -240,7 +240,7 @@ class LogRepository implements LogRepositoryInterface
         // Collect IDs to delete
         $idsToDelete = [];
         foreach ($resultSet as $row) {
-            $idsToDelete[] = (int) $row['id'];
+            $idsToDelete[] = (int)$row['id'];
         }
 
         if (!empty($idsToDelete)) {
@@ -471,7 +471,7 @@ class LogRepository implements LogRepositoryInterface
     {
         // Set where
         $columns = ['count' => new Expression('count(*)')];
-        $where = [];
+        $where   = [];
         if (isset($params['identity']) & !empty($params['identity'])) {
             $where['account.identity like ?'] = '%' . $params['identity'] . '%';
         }
