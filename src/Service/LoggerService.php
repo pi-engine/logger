@@ -397,18 +397,25 @@ class LoggerService implements ServiceInterface
 
     public function cleanupForbiddenKeys(array $params): array
     {
-        if (isset($this->config['forbidden_keys']) && !empty($this->config['forbidden_keys'])) {
-            foreach ($params as $key => $value) {
-                if (in_array($key, $this->config['forbidden_keys'])) {
-                    unset($params[$key]);
-                } elseif (is_array($value)) {
-                    $params[$key] = $this->cleanupForbiddenKeys($value);
-                }
+        $forbiddenKeys = $this->config['forbidden_keys'] ?? [];
+
+        // If no forbidden keys are defined, return the input unchanged
+        if (empty($forbiddenKeys)) {
+            return $params;
+        }
+
+        $forbidden = array_flip($forbiddenKeys);
+        foreach ($params as $key => $value) {
+            if (isset($forbidden[$key])) {
+                unset($params[$key]);
+            } elseif (is_array($value)) {
+                $params[$key] = $this->cleanupForbiddenKeys($value);
             }
         }
 
         return $params;
     }
+
 
     public function addUserLog(string $state, array $params): void
     {
