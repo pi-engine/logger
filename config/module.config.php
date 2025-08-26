@@ -21,6 +21,7 @@ return [
             Handler\InstallerHandler::class                   => Factory\Handler\InstallerHandlerFactory::class,
             Handler\Admin\System\ListHandler::class           => Factory\Handler\Admin\System\ListHandlerFactory::class,
             Handler\Admin\User\ListHandler::class             => Factory\Handler\Admin\User\ListHandlerFactory::class,
+            Handler\Admin\History\ListHandler::class          => Factory\Handler\Admin\History\ListHandlerFactory::class,
             Handler\Admin\Manage\RepositoryHandler::class     => Factory\Handler\Admin\Manage\RepositoryHandlerFactory::class,
         ],
     ],
@@ -90,6 +91,37 @@ return [
                                             AuthenticationMiddleware::class,
                                             AuthorizationMiddleware::class,
                                             Handler\Admin\User\ListHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'history'   => [
+                        'type'         => Literal::class,
+                        'options'      => [
+                            'route'    => '/history',
+                            'defaults' => [],
+                        ],
+                        'child_routes' => [
+                            'list' => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/list',
+                                    'defaults' => [
+                                        'title'      => 'Admin logger history list',
+                                        'module'     => 'logger',
+                                        'section'    => 'admin',
+                                        'package'    => 'history',
+                                        'handler'    => 'list',
+                                        'permission' => 'admin-logger-history-list',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            AuthorizationMiddleware::class,
+                                            Handler\Admin\History\ListHandler::class
                                         ),
                                     ],
                                 ],

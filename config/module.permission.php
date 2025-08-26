@@ -26,6 +26,17 @@ return [
             ],
         ],
         [
+            'title'      => 'Admin logger history list',
+            'module'     => 'logger',
+            'section'    => 'admin',
+            'package'    => 'history',
+            'handler'    => 'list',
+            'permission' => 'admin-logger-history-list',
+            'role'       => [
+                'admin',
+            ],
+        ],
+        [
             'title'      => 'Admin logger manage repository',
             'module'     => 'logger',
             'section'    => 'admin',

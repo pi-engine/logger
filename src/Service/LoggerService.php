@@ -503,7 +503,7 @@ class LoggerService implements ServiceInterface
         ];
     }
 
-    public function addHistoryLog(string $state, array $params): void
+    public function addHistoryLog(array $params): void
     {
         $addParams = [
             'relation_module'  => $params['relation_module'],
@@ -512,7 +512,7 @@ class LoggerService implements ServiceInterface
             'user_id'          => $params['user_id'] ?? 0,
             'company_id'       => $params['company_id'] ?? 0,
             'time_create'      => time(),
-            'state'            => $state,
+            'state'            => $params['state'] ?? 'update',
             'information'      => json_encode($params, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK),
         ];
 
