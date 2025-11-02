@@ -24,7 +24,7 @@ class LoggerService implements ServiceInterface
     protected array $config;
 
     /* @var array */
-    private static array $priorities
+    protected static array $priorities
         = [
             LogLevel::EMERGENCY => 0,
             LogLevel::ALERT     => 1,
@@ -34,6 +34,27 @@ class LoggerService implements ServiceInterface
             LogLevel::NOTICE    => 5,
             LogLevel::INFO      => 6,
             LogLevel::DEBUG     => 7,
+        ];
+
+    protected array $systemLogColumns
+        = [
+            'ip',
+            'path',
+            'message',
+            'user_id',
+            'company_id',
+            'target',
+            'module',
+            'section',
+            'package',
+            'handler',
+            'permissions',
+        ];
+
+    protected array $userLogColumns
+        = [
+            'ip',
+            'method',
         ];
 
     public function __construct(
@@ -267,13 +288,13 @@ class LoggerService implements ServiceInterface
         }
 
         $list       = [];
-        $systemList = $this->logRepository->getSystemLogList($listParams);
+        $systemList = $this->logRepository->getSystemLogList($listParams, $this->systemLogColumns);
         foreach ($systemList as $object) {
             $list[] = $this->canonizeSystemLogMysql($object);
         }
 
         // Get count
-        $count = $this->logRepository->getSystemLogCount($listParams);
+        $count = $this->logRepository->getSystemLogCount($listParams, $this->systemLogColumns);
 
         return [
             'result' => true,
@@ -481,13 +502,13 @@ class LoggerService implements ServiceInterface
 
         // Get list
         $list   = [];
-        $rowSet = $this->logRepository->getUserLogList($listParams);
+        $rowSet = $this->logRepository->getUserLogList($listParams, $this->userLogColumns);
         foreach ($rowSet as $row) {
             $list[] = $this->canonizeUserLog($row);
         }
 
         // Get count
-        $count = $this->logRepository->getUserLogCount($listParams);
+        $count = $this->logRepository->getUserLogCount($listParams, $this->userLogColumns);
 
         return [
             'result' => true,

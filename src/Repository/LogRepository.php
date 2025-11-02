@@ -64,7 +64,7 @@ class LogRepository implements LogRepositoryInterface
         }
     }
 
-    public function getSystemLogList(array $params = []): HydratingResultSet|array
+    public function getSystemLogList(array $params = [], array $systemLogColumns = []): HydratingResultSet|array
     {
         $where = [];
         if (isset($params['identity']) & !empty($params['identity'])) {
@@ -100,15 +100,34 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['data_to'])) {
             $where['log.time_create <= ?'] = $params['data_to'];
         }
+
+        // Set where in information json
+        $informationWhere = '';
         if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
             foreach ($params['information'] as $key => $value) {
-                $where[] = new Expression(sprintf("JSON_EXTRACT(log.information, '$.%s') = '%s'", $key, $value));
+                // Add Schema/Whitelist Layer
+                if (!in_array($key, $systemLogColumns, true)) {
+                    continue;
+                }
+
+                // Whitelist or validate the key (only letters, numbers, underscore, dash)
+                if (!preg_match('/^[a-zA-Z0-9_-]+$/', $key)) {
+                    continue;
+                }
+                // Build JSON path
+                $jsonPath = '$.' . $key;
+
+                // Build Expression safely with parameters
+                $informationWhere = new Expression("JSON_UNQUOTE(JSON_EXTRACT(log.information, ?)) = ?", [$jsonPath, $value]);
             }
         }
 
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableSystem];
-        $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
+        $select = $sql->select()->from($from)->where($where);
+        if (!empty($informationWhere)) {
+            $select->where($informationWhere);
+        }
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
@@ -120,6 +139,16 @@ class LogRepository implements LogRepositoryInterface
             ],
             $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
         );
+        if (isset($params['order']) && !empty($params['order'])) {
+            $select->order($params['order']);
+        }
+        if (isset($params['offset']) && !empty($params['offset'])) {
+            $select->offset($params['offset']);
+        }
+        if (isset($params['limit']) && !empty($params['limit'])) {
+            $select->limit($params['limit']);
+        }
+
         $statement = $sql->prepareStatementForSqlObject($select);
         $result    = $statement->execute();
 
@@ -133,7 +162,7 @@ class LogRepository implements LogRepositoryInterface
         return $resultSet;
     }
 
-    public function getSystemLogCount(array $params = []): int
+    public function getSystemLogCount(array $params = [], array $systemLogColumns = []): int
     {
         $columns = ['count' => new Expression('count(*)')];
         $where   = [];
@@ -170,15 +199,34 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['data_to'])) {
             $where['log.time_create <= ?'] = $params['data_to'];
         }
+
+        // Set where in information json
+        $informationWhere = '';
         if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
             foreach ($params['information'] as $key => $value) {
-                $where[] = new Expression(sprintf("JSON_EXTRACT(log.information, '$.%s') = '%s'", $key, $value));
+                // Add Schema/Whitelist Layer
+                if (!in_array($key, $systemLogColumns, true)) {
+                    continue;
+                }
+
+                // Whitelist or validate the key (only letters, numbers, underscore, dash)
+                if (!preg_match('/^[a-zA-Z0-9_-]+$/', $key)) {
+                    continue;
+                }
+                // Build JSON path
+                $jsonPath = '$.' . $key;
+
+                // Build Expression safely with parameters
+                $informationWhere = new Expression("JSON_UNQUOTE(JSON_EXTRACT(log.information, ?)) = ?", [$jsonPath, $value]);
             }
         }
 
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableSystem];
         $select = $sql->select()->from($from)->columns($columns)->where($where);
+        if (!empty($informationWhere)) {
+            $select->where($informationWhere);
+        }
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
@@ -272,7 +320,7 @@ class LogRepository implements LogRepositoryInterface
         }
     }
 
-    public function getUserLogList(array $params = []): HydratingResultSet|array
+    public function getUserLogList(array $params = [], array $userLogColumns = []): HydratingResultSet|array
     {
         $where = [];
         if (isset($params['identity']) & !empty($params['identity'])) {
@@ -302,15 +350,34 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['data_to'])) {
             $where['log.time_create <= ?'] = $params['data_to'];
         }
+
+        // Set where in information json
+        $informationWhere = '';
         if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
             foreach ($params['information'] as $key => $value) {
-                $where[] = new Expression(sprintf("JSON_EXTRACT(log.information, '$.%s') = '%s'", $key, $value));
+                // Add Schema/Whitelist Layer
+                if (!in_array($key, $userLogColumns, true)) {
+                    continue;
+                }
+
+                // Whitelist or validate the key (only letters, numbers, underscore, dash)
+                if (!preg_match('/^[a-zA-Z0-9_-]+$/', $key)) {
+                    continue;
+                }
+                // Build JSON path
+                $jsonPath = '$.' . $key;
+
+                // Build Expression safely with parameters
+                $informationWhere = new Expression("JSON_UNQUOTE(JSON_EXTRACT(log.information, ?)) = ?", [$jsonPath, $value]);
             }
         }
 
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableUser];
-        $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
+        $select = $sql->select()->from($from)->where($where);
+        if (!empty($informationWhere)) {
+            $select->where($informationWhere);
+        }
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
@@ -322,6 +389,15 @@ class LogRepository implements LogRepositoryInterface
             ],
             $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
         );
+        if (isset($params['order']) && !empty($params['order'])) {
+            $select->order($params['order']);
+        }
+        if (isset($params['offset']) && !empty($params['offset'])) {
+            $select->offset($params['offset']);
+        }
+        if (isset($params['limit']) && !empty($params['limit'])) {
+            $select->limit($params['limit']);
+        }
 
         $statement = $sql->prepareStatementForSqlObject($select);
         $result    = $statement->execute();
@@ -336,7 +412,7 @@ class LogRepository implements LogRepositoryInterface
         return $resultSet;
     }
 
-    public function getUserLogCount(array $params = []): int
+    public function getUserLogCount(array $params = [], array $userLogColumns = []): int
     {
         // Set where
         $columns = ['count' => new Expression('count(*)')];
@@ -368,15 +444,34 @@ class LogRepository implements LogRepositoryInterface
         if (!empty($params['data_to'])) {
             $where['log.time_create <= ?'] = $params['data_to'];
         }
+
+        // Set where in information json
+        $informationWhere = '';
         if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
             foreach ($params['information'] as $key => $value) {
-                $where[] = new Expression(sprintf("JSON_EXTRACT(log.information, '$.%s') = '%s'", $key, $value));
+                // Add Schema/Whitelist Layer
+                if (!in_array($key, $userLogColumns, true)) {
+                    continue;
+                }
+
+                // Whitelist or validate the key (only letters, numbers, underscore, dash)
+                if (!preg_match('/^[a-zA-Z0-9_-]+$/', $key)) {
+                    continue;
+                }
+                // Build JSON path
+                $jsonPath = '$.' . $key;
+
+                // Build Expression safely with parameters
+                $informationWhere = new Expression("JSON_UNQUOTE(JSON_EXTRACT(log.information, ?)) = ?", [$jsonPath, $value]);
             }
         }
 
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableUser];
         $select = $sql->select()->from($from)->columns($columns)->where($where);
+        if (!empty($informationWhere)) {
+            $select->where($informationWhere);
+        }
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
@@ -441,7 +536,7 @@ class LogRepository implements LogRepositoryInterface
 
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableHistory];
-        $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
+        $select = $sql->select()->from($from)->where($where);
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
@@ -453,6 +548,15 @@ class LogRepository implements LogRepositoryInterface
             ],
             $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
         );
+        if (isset($params['order']) && !empty($params['order'])) {
+            $select->order($params['order']);
+        }
+        if (isset($params['offset']) && !empty($params['offset'])) {
+            $select->offset($params['offset']);
+        }
+        if (isset($params['limit']) && !empty($params['limit'])) {
+            $select->limit($params['limit']);
+        }
 
         $statement = $sql->prepareStatementForSqlObject($select);
         $result    = $statement->execute();
