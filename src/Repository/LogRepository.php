@@ -9,6 +9,7 @@ use Laminas\Db\Sql\Insert;
 use Laminas\Db\Sql\Predicate\Expression;
 use Laminas\Db\Sql\Sql;
 use Laminas\Hydrator\HydratorInterface;
+use Pi\Core\Repository\JsonQueryTrait;
 use Pi\Logger\Model\History;
 use Pi\Logger\Model\System;
 use Pi\Logger\Model\User;
@@ -16,6 +17,8 @@ use RuntimeException;
 
 class LogRepository implements LogRepositoryInterface
 {
+    use JsonQueryTrait;
+
     private string $tableSystem = 'logger_system';
 
     private string $tableUser = 'logger_user';
@@ -101,32 +104,11 @@ class LogRepository implements LogRepositoryInterface
             $where['log.time_create <= ?'] = $params['data_to'];
         }
 
-        // Set where in information json
-        $informationWhere = '';
-        if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
-            foreach ($params['information'] as $key => $value) {
-                // Add Schema/Whitelist Layer
-                if (!in_array($key, $systemLogColumns, true)) {
-                    continue;
-                }
-
-                // Whitelist or validate the key (only letters, numbers, underscore, dash)
-                if (!preg_match('/^[a-zA-Z0-9_-]+$/', $key)) {
-                    continue;
-                }
-                // Build JSON path
-                $jsonPath = '$.' . $key;
-
-                // Build Expression safely with parameters
-                $informationWhere = new Expression("JSON_UNQUOTE(JSON_EXTRACT(log.information, ?)) = ?", [$jsonPath, $value]);
-            }
-        }
-
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableSystem];
         $select = $sql->select()->from($from)->where($where);
-        if (!empty($informationWhere)) {
-            $select->where($informationWhere);
+        if (!empty($params['information']) && is_array($params['information'])) {
+            $select->where($this->buildJsonWhere($params['information'], $systemLogColumns, 'information', 'log.'));
         }
         $select->join(
             ['account' => $this->tableAccount],
@@ -200,32 +182,11 @@ class LogRepository implements LogRepositoryInterface
             $where['log.time_create <= ?'] = $params['data_to'];
         }
 
-        // Set where in information json
-        $informationWhere = '';
-        if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
-            foreach ($params['information'] as $key => $value) {
-                // Add Schema/Whitelist Layer
-                if (!in_array($key, $systemLogColumns, true)) {
-                    continue;
-                }
-
-                // Whitelist or validate the key (only letters, numbers, underscore, dash)
-                if (!preg_match('/^[a-zA-Z0-9_-]+$/', $key)) {
-                    continue;
-                }
-                // Build JSON path
-                $jsonPath = '$.' . $key;
-
-                // Build Expression safely with parameters
-                $informationWhere = new Expression("JSON_UNQUOTE(JSON_EXTRACT(log.information, ?)) = ?", [$jsonPath, $value]);
-            }
-        }
-
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableSystem];
         $select = $sql->select()->from($from)->columns($columns)->where($where);
-        if (!empty($informationWhere)) {
-            $select->where($informationWhere);
+        if (!empty($params['information']) && is_array($params['information'])) {
+            $select->where($this->buildJsonWhere($params['information'], $systemLogColumns, 'information', 'log.'));
         }
         $select->join(
             ['account' => $this->tableAccount],
@@ -351,32 +312,11 @@ class LogRepository implements LogRepositoryInterface
             $where['log.time_create <= ?'] = $params['data_to'];
         }
 
-        // Set where in information json
-        $informationWhere = '';
-        if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
-            foreach ($params['information'] as $key => $value) {
-                // Add Schema/Whitelist Layer
-                if (!in_array($key, $userLogColumns, true)) {
-                    continue;
-                }
-
-                // Whitelist or validate the key (only letters, numbers, underscore, dash)
-                if (!preg_match('/^[a-zA-Z0-9_-]+$/', $key)) {
-                    continue;
-                }
-                // Build JSON path
-                $jsonPath = '$.' . $key;
-
-                // Build Expression safely with parameters
-                $informationWhere = new Expression("JSON_UNQUOTE(JSON_EXTRACT(log.information, ?)) = ?", [$jsonPath, $value]);
-            }
-        }
-
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableUser];
         $select = $sql->select()->from($from)->where($where);
-        if (!empty($informationWhere)) {
-            $select->where($informationWhere);
+        if (!empty($params['information']) && is_array($params['information'])) {
+            $select->where($this->buildJsonWhere($params['information'], $userLogColumns, 'information', 'log.'));
         }
         $select->join(
             ['account' => $this->tableAccount],
@@ -445,32 +385,11 @@ class LogRepository implements LogRepositoryInterface
             $where['log.time_create <= ?'] = $params['data_to'];
         }
 
-        // Set where in information json
-        $informationWhere = '';
-        if (isset($params['information']) && !empty($params['information']) && is_array($params['information'])) {
-            foreach ($params['information'] as $key => $value) {
-                // Add Schema/Whitelist Layer
-                if (!in_array($key, $userLogColumns, true)) {
-                    continue;
-                }
-
-                // Whitelist or validate the key (only letters, numbers, underscore, dash)
-                if (!preg_match('/^[a-zA-Z0-9_-]+$/', $key)) {
-                    continue;
-                }
-                // Build JSON path
-                $jsonPath = '$.' . $key;
-
-                // Build Expression safely with parameters
-                $informationWhere = new Expression("JSON_UNQUOTE(JSON_EXTRACT(log.information, ?)) = ?", [$jsonPath, $value]);
-            }
-        }
-
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableUser];
         $select = $sql->select()->from($from)->columns($columns)->where($where);
-        if (!empty($informationWhere)) {
-            $select->where($informationWhere);
+        if (!empty($params['information']) && is_array($params['information'])) {
+            $select->where($this->buildJsonWhere($params['information'], $userLogColumns, 'information', 'log.'));
         }
         $select->join(
             ['account' => $this->tableAccount],
