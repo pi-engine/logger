@@ -111,7 +111,9 @@ class LogRepository implements LogRepositoryInterface
         $whereMain->addPredicates($where);
         if (!empty($params['information']) && is_array($params['information'])) {
             $jsonWhere = $this->buildJsonWhere($params['information'], $systemLogColumns, 'information', 'log.');
-            $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+            if ($jsonWhere !== null) {
+                $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+            }
         }
 
         $sql    = new Sql($this->db);
@@ -194,7 +196,9 @@ class LogRepository implements LogRepositoryInterface
         $whereMain->addPredicates($where);
         if (!empty($params['information']) && is_array($params['information'])) {
             $jsonWhere = $this->buildJsonWhere($params['information'], $systemLogColumns, 'information', 'log.');
-            $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+            if ($jsonWhere !== null) {
+                $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+            }
         }
 
         $sql    = new Sql($this->db);
@@ -329,7 +333,9 @@ class LogRepository implements LogRepositoryInterface
         $whereMain->addPredicates($where);
         if (!empty($params['information']) && is_array($params['information'])) {
             $jsonWhere = $this->buildJsonWhere($params['information'], $userLogColumns, 'information', 'log.');
-            $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+            if ($jsonWhere !== null) {
+                $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+            }
         }
 
         $sql    = new Sql($this->db);
@@ -407,7 +413,9 @@ class LogRepository implements LogRepositoryInterface
         $whereMain->addPredicates($where);
         if (!empty($params['information']) && is_array($params['information'])) {
             $jsonWhere = $this->buildJsonWhere($params['information'], $userLogColumns, 'information', 'log.');
-            $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+            if ($jsonWhere !== null) {
+                $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+            }
         }
 
         $sql    = new Sql($this->db);
