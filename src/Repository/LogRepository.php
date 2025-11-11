@@ -7,7 +7,9 @@ use Laminas\Db\Adapter\Driver\ResultInterface;
 use Laminas\Db\ResultSet\HydratingResultSet;
 use Laminas\Db\Sql\Insert;
 use Laminas\Db\Sql\Predicate\Expression;
+use Laminas\Db\Sql\Predicate\PredicateSet;
 use Laminas\Db\Sql\Sql;
+use Laminas\Db\Sql\Where;
 use Laminas\Hydrator\HydratorInterface;
 use Pi\Core\Repository\JsonQueryTrait;
 use Pi\Logger\Model\History;
@@ -104,12 +106,17 @@ class LogRepository implements LogRepositoryInterface
             $where['log.time_create <= ?'] = $params['data_to'];
         }
 
+        // Set a where
+        $whereMain = new Where();
+        $whereMain->addPredicates($where);
+        if (!empty($params['information']) && is_array($params['information'])) {
+            $jsonWhere = $this->buildJsonWhere($params['information'], $systemLogColumns, 'information', 'log.');
+            $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+        }
+
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableSystem];
-        $select = $sql->select()->from($from)->where($where);
-        if (!empty($params['information']) && is_array($params['information'])) {
-            $select->where($this->buildJsonWhere($params['information'], $systemLogColumns, 'information', 'log.'));
-        }
+        $select = $sql->select()->from($from)->where($whereMain);
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
@@ -182,12 +189,17 @@ class LogRepository implements LogRepositoryInterface
             $where['log.time_create <= ?'] = $params['data_to'];
         }
 
+        // Set a where
+        $whereMain = new Where();
+        $whereMain->addPredicates($where);
+        if (!empty($params['information']) && is_array($params['information'])) {
+            $jsonWhere = $this->buildJsonWhere($params['information'], $systemLogColumns, 'information', 'log.');
+            $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+        }
+
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableSystem];
-        $select = $sql->select()->from($from)->columns($columns)->where($where);
-        if (!empty($params['information']) && is_array($params['information'])) {
-            $select->where($this->buildJsonWhere($params['information'], $systemLogColumns, 'information', 'log.'));
-        }
+        $select = $sql->select()->from($from)->columns($columns)->where($whereMain);
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
@@ -312,12 +324,17 @@ class LogRepository implements LogRepositoryInterface
             $where['log.time_create <= ?'] = $params['data_to'];
         }
 
+        // Set a where
+        $whereMain = new Where();
+        $whereMain->addPredicates($where);
+        if (!empty($params['information']) && is_array($params['information'])) {
+            $jsonWhere = $this->buildJsonWhere($params['information'], $userLogColumns, 'information', 'log.');
+            $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+        }
+
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableUser];
-        $select = $sql->select()->from($from)->where($where);
-        if (!empty($params['information']) && is_array($params['information'])) {
-            $select->where($this->buildJsonWhere($params['information'], $userLogColumns, 'information', 'log.'));
-        }
+        $select = $sql->select()->from($from)->where($whereMain);
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
@@ -385,12 +402,17 @@ class LogRepository implements LogRepositoryInterface
             $where['log.time_create <= ?'] = $params['data_to'];
         }
 
+        // Set a where
+        $whereMain = new Where();
+        $whereMain->addPredicates($where);
+        if (!empty($params['information']) && is_array($params['information'])) {
+            $jsonWhere = $this->buildJsonWhere($params['information'], $userLogColumns, 'information', 'log.');
+            $whereMain->addPredicates($jsonWhere, PredicateSet::COMBINED_BY_AND);
+        }
+
         $sql    = new Sql($this->db);
         $from   = ['log' => $this->tableUser];
-        $select = $sql->select()->from($from)->columns($columns)->where($where);
-        if (!empty($params['information']) && is_array($params['information'])) {
-            $select->where($this->buildJsonWhere($params['information'], $userLogColumns, 'information', 'log.'));
-        }
+        $select = $sql->select()->from($from)->columns($columns)->where($whereMain);
         $select->join(
             ['account' => $this->tableAccount],
             'log.user_id=account.id',
