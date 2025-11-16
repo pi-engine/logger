@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS `logger_system`
 	`time_create` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	`information` JSON,
 	PRIMARY KEY (`id`)
-);
+) DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS `logger_user`
 (
@@ -22,7 +23,8 @@ CREATE TABLE IF NOT EXISTS `logger_user`
 	`state`       VARCHAR(32)      NOT NULL DEFAULT '',
 	`information` JSON,
 	PRIMARY KEY (`id`)
-);
+) DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS `logger_history`
 (
@@ -36,4 +38,5 @@ CREATE TABLE IF NOT EXISTS `logger_history`
 	`state`            VARCHAR(32)      NOT NULL DEFAULT '',
 	`information`      JSON,
 	PRIMARY KEY (`id`)
-);
+) DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
