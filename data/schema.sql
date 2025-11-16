@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS `logger_system`
 (
 	`id`          INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`path`        VARCHAR(255)     NOT NULL DEFAULT '',
-	`message`     TEXT             NOT NULL DEFAULT '',
+	`message`     TEXT,
 	`priority`    INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	`level`       VARCHAR(255)     NOT NULL DEFAULT '',
 	`user_id`     INT(10) UNSIGNED NOT NULL DEFAULT '0',
